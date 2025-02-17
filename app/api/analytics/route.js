@@ -1,19 +1,28 @@
-export async function GET(request) {
+export async function GET(req) {
   try {
-    const apiUrl = "http://127.0.0.1:8000/analytics";
-    const response = await fetch(apiUrl);
+    const response = await fetch("http://127.0.0.1:8000/analytics"); // Requête vers Laravel
     console.log("response1", response);
 
     if (!response.ok) {
-      throw new Error(
-        `Erreur lors de la récupération des données: ${response.statusText}`
-      );
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
-    res.status(200).json(data);
+    console.log("response data:", data); // Log pour voir les données
+
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   } catch (error) {
-    console.error("Error in fetchAnalytics:", error); // Log the error for debugging
-    res.status(500).json({ error: error.message });
+    console.error("Error in fetchAnalytics:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   }
 }

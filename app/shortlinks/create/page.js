@@ -1,18 +1,11 @@
-import Image from "next/image";
-import Analytics from "./analytics/page";
-import CreateLinkForm from "./shortlinks/create/page";
-import Sidebar from "./components/layout/Sidebar";
-import Header from "./components/layout/Header";
-import { BackButton } from "./components/ui/Button";
+"use client";
 
-export default function Home() {
-  // return (
-  //   <div>
-  //     <h1>Dashboard Analytics</h1>
-  //      <Analytics />
-  //   </div>
-  // );
+import Header from "@/app/components/layout/Header";
+import Sidebar from "@/app/components/layout/Sidebar";
+import CreateLinkForm from "./CreateLinkForm";
+import { BackButton } from "@/app/components/ui/Button";
 
+export default function CreateLink() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar /> {/* Sidebar renders based on screen size */}
@@ -23,7 +16,7 @@ export default function Home() {
             <div className="flex items-center mb-6">
               <BackButton />
             </div>
-            {/* <CreateLinkForm /> */}
+            <CreateLinkForm />
           </div>
         </main>
       </div>
