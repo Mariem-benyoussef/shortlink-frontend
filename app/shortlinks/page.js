@@ -1,6 +1,7 @@
+"use client";
+
 import { ArrowLeft, Copy, MoreVertical, Share2 } from "lucide-react";
 import Link from "next/link";
-
 import { AddButton, BackButton, Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import Sidebar from "../components/layout/Sidebar";
@@ -18,32 +19,43 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/Dropdown-menu";
 import Header from "../components/layout/Header";
-// Sample data - this would come from an API
-const links = [
-  {
-    id: 1,
-    title: "Tunisiebooking.com vacances a prix promos",
-    shortUrl: "bit.ly/4sBRXN8",
-    thumbnail:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-PvuKpcnFJs05mrVzO25QvnSWaKuXAS.png",
-  },
-  {
-    id: 2,
-    title: "Tunisiebooking.com vacances a prix promos",
-    shortUrl: "bit.ly/4sBRXN8",
-    thumbnail:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-PvuKpcnFJs05mrVzO25QvnSWaKuXAS.png",
-  },
-  {
-    id: 3,
-    title: "Tunisiebooking.com vacances a prix promos",
-    shortUrl: "bit.ly/4sBRXN8",
-    thumbnail:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-PvuKpcnFJs05mrVzO25QvnSWaKuXAS.png",
-  },
-];
+import { useEffect, useState } from "react";
 
 export default function LinksPage() {
+  const [links, setLinks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    const fetchLinks = async () => {
+      try {
+        const response = await fetch("/api/shortlinks");
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+        setLinks(data);
+      } catch (error) {
+        console.error("Error fetching links:", error);
+      }
+    };
+    fetchLinks();
+  }, []);
+
+  const filteredLinks = links.filter((link) =>
+    link.titre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentLinks = filteredLinks.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLinks.length / itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -60,9 +72,12 @@ export default function LinksPage() {
             </div>
 
             <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1">
-                <Input placeholder="Search" className="w-full" />
-              </div>
+              <Input
+                placeholder="Search"
+                className="w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <Select defaultValue="newest">
                 <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Trier par" />
@@ -76,7 +91,7 @@ export default function LinksPage() {
             </div>
 
             <div className="space-y-4">
-              {links.map((link) => (
+              {currentLinks.map((link) => (
                 <div
                   key={link.id}
                   className="flex items-center gap-4 p-4 bg-card rounded-lg border"
@@ -87,23 +102,21 @@ export default function LinksPage() {
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{link.title}</h3>
+                    <h3 className="font-medium truncate">{link.titre}</h3>
                     <p className="text-sm text-muted-foreground">
                       {link.shortUrl}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="secondary" size="sm">
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copier
+                      <Copy className="h-4 w-4 mr-2" /> Copier
                     </Button>
                     <Button
                       variant="secondary"
                       size="sm"
                       className="text-pink-600"
                     >
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Partager
+                      <Share2 className="h-4 w-4 mr-2" /> Partager
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -112,10 +125,9 @@ export default function LinksPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          Modifier
-                          {/* <Link href={`/shortlinks/edit/${id}`}>Modifier</Link> */}
-                        </DropdownMenuItem>
+                        <Link href={`/shortlinks/edit/${link.id}`}>
+                          <DropdownMenuItem>Modifier</DropdownMenuItem>
+                        </Link>
                         <DropdownMenuItem className="text-destructive">
                           Supprimer
                         </DropdownMenuItem>
@@ -131,30 +143,31 @@ export default function LinksPage() {
                 Affichage des données
               </p>
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  {"<"}
-                </Button>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 bg-primary text-primary-foreground"
+                  className="h-8 w-8"
+                  onClick={() => handlePageChange(currentPage - 1)}
                 >
-                  1
+                  {"<"}
                 </Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  2
-                </Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  3
-                </Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  4
-                </Button>
-                <span className="mx-2">...</span>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  40
-                </Button>
-                <Button variant="outline" size="icon" className="h-8 w-8">
+                {[...Array(totalPages)].map((_, i) => (
+                  <Button
+                    key={i}
+                    variant={currentPage === i + 1 ? "primary" : "outline"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handlePageChange(i + 1)}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                >
                   {">"}
                 </Button>
               </div>

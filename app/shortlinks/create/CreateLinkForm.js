@@ -15,34 +15,47 @@ import { useState } from "react";
 export default function CreateLinkForm() {
   const [formData, setFormData] = useState({
     destination: "",
-    title: "",
-    domain: "",
-    customPath: "",
+    titre: "",
+    chemin_personnalise: "",
     showUtm: false,
-    utm: {
-      term: "",
-      content: "",
-      campaign: "",
-      source: "",
-      medium: "",
-    },
+    utm_term: "",
+    utm_content: "",
+    utm_campaign: "",
+    utm_source: "",
+    utm_medium: "",
   });
-
+  const [error, setError] = useState(null);
+  const [shortlink, setShortlink] = useState(null);
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleUtmChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      utm: { ...prev.utm, [name]: value },
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = () => {
-    console.log("Form Data:", formData);
+  const handleSubmit = async () => {
+    setError(null);
+    setShortlink(null);
+    try {
+      const response = await fetch("/api/shortlinks", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      // console.log("dataaa", data);
+
+      setShortlink(data);
+      console.log("Lien créé avec succès :", shortlink);
+    } catch (error) {
+      console.error("Erreur lors de la création du lien :", error);
+      setError(error.message);
+      alert("Erreur lors de la création du lien.");
+    }
   };
 
   return (
@@ -59,14 +72,15 @@ export default function CreateLinkForm() {
               value={formData.destination}
               onChange={handleChange}
               placeholder="https://exemple.com/mon-url-longue"
+              required
             />
           </div>
 
           <div className="space-y-2">
             <Label>Titre (facultatif)</Label>
             <Input
-              name="title"
-              value={formData.title}
+              name="titre"
+              value={formData.titre}
               onChange={handleChange}
               placeholder="Titre (facultatif)"
             />
@@ -77,19 +91,14 @@ export default function CreateLinkForm() {
             <div className="flex gap-2">
               <div className="flex-1">
                 <Label>Domaine</Label>
-                <Input
-                  name="domain"
-                  value={formData.domain}
-                  onChange={handleChange}
-                  placeholder="tnlresa"
-                />
+                <Input placeholder="tnbresa" disabled />
               </div>
               <div className="flex items-center pt-8">/</div>
               <div className="flex-1">
                 <Label>Chemin personnalisé unique (facultatif)</Label>
                 <Input
-                  name="customPath"
-                  value={formData.customPath}
+                  name="chemin_personnalise"
+                  value={formData.chemin_personnalise}
                   onChange={handleChange}
                   placeholder="Chemin personnalisé"
                 />
@@ -115,18 +124,18 @@ export default function CreateLinkForm() {
                   <div className="space-y-2">
                     <Label>Terme (facultatif)</Label>
                     <Input
-                      name="term"
-                      value={formData.utm.term}
-                      onChange={handleUtmChange}
+                      name="utm_term"
+                      value={formData.utm_term}
+                      onChange={handleChange}
                       placeholder="Terme (facultatif)"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Contenu</Label>
                     <Input
-                      name="content"
-                      value={formData.utm.content}
-                      onChange={handleUtmChange}
+                      name="utm_content"
+                      value={formData.utm_content}
+                      onChange={handleChange}
                       placeholder="Contenu"
                     />
                   </div>
@@ -135,9 +144,9 @@ export default function CreateLinkForm() {
                 <div className="space-y-2">
                   <Label>Campagne</Label>
                   <Input
-                    name="campaign"
-                    value={formData.utm.campaign}
-                    onChange={handleUtmChange}
+                    name="utm_campaign"
+                    value={formData.utm_campaign}
+                    onChange={handleChange}
                     placeholder="Campagne"
                   />
                 </div>
@@ -146,18 +155,18 @@ export default function CreateLinkForm() {
                   <div className="space-y-2">
                     <Label>Source</Label>
                     <Input
-                      name="source"
-                      value={formData.utm.source}
-                      onChange={handleUtmChange}
+                      name="utm_source"
+                      value={formData.utm_source}
+                      onChange={handleChange}
                       placeholder="Source"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Moyen</Label>
                     <Input
-                      name="medium"
-                      value={formData.utm.medium}
-                      onChange={handleUtmChange}
+                      name="utm_medium"
+                      value={formData.utm_medium}
+                      onChange={handleChange}
                       placeholder="Moyen"
                     />
                   </div>
@@ -173,6 +182,13 @@ export default function CreateLinkForm() {
         >
           Créer votre lien
         </Button>
+
+        {error && <p className="text-red-500 mt-2">{error}</p>}
+        {shortlink && (
+          <p className="text-green-500 mt-2">
+            Lien créé avec succès : {shortlink.destination}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
