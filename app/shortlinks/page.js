@@ -18,14 +18,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/Dropdown-menu";
+
 import Header from "../components/layout/Header";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/Dialog";
 
 export default function LinksPage() {
   const [links, setLinks] = useState([]);
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const router = useRouter();
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -33,6 +45,7 @@ export default function LinksPage() {
         const response = await fetch("/api/shortlinks");
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
+        // console.log("fetched Links", data);
         setLinks(data);
       } catch (error) {
         console.error("Error fetching links:", error);
@@ -41,9 +54,42 @@ export default function LinksPage() {
     fetchLinks();
   }, []);
 
-  const filteredLinks = links.filter((link) =>
-    link.titre.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Open delete confirmation modal
+  const openDeleteDialog = (id) => {
+    setDeleteId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle delete action
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      const response = await fetch(`/api/shortlinks/${deleteId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Erreur lors de la suppression");
+
+      // Update state after successful deletion
+      setLinks(links.filter((link) => link.id !== deleteId));
+      setIsDeleteDialogOpen(false);
+      setDeleteId(null);
+    } catch (error) {
+      console.error("Erreur de suppression:", error);
+    }
+  };
+
+  const handleUpdate = (id) => {
+    router.push(`/shortlinks/edit/${id}`);
+  };
+
+  // const filteredLinks = links;
+  const filteredLinks = searchTerm
+    ? links.filter(
+        (link) =>
+          link.titre &&
+          link.titre.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : links;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -98,11 +144,11 @@ export default function LinksPage() {
                 >
                   <img
                     src={link.thumbnail || "/placeholder.svg"}
-                    alt=""
+                    alt="thumbnail"
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{link.titre}</h3>
+                    <h3 className="font-medium truncate">{link.destination}</h3>
                     <p className="text-sm text-muted-foreground">
                       {link.shortUrl}
                     </p>
@@ -125,10 +171,13 @@ export default function LinksPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <Link href={`/shortlinks/edit/${link.id}`}>
-                          <DropdownMenuItem>Modifier</DropdownMenuItem>
-                        </Link>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem onClick={() => handleUpdate(link.id)}>
+                          Modifier
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => openDeleteDialog(link.id)}
+                        >
                           Supprimer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -175,6 +224,30 @@ export default function LinksPage() {
           </div>
         </main>
       </div>
+
+      {/* DELETE CONFIRMATION MODAL (Fixed Position) */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer ce lien ?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Cette action est irréversible. Voulez-vous vraiment supprimer ce
+            lien ?
+          </p>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

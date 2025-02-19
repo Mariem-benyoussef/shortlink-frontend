@@ -7,19 +7,53 @@ import { Input } from "@/app/components/ui/Input";
 import { Label } from "@/app/components/ui/Label";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-
-
-// In a real app, this would be fetched based on the ID
-const sampleLink = {
-  domain: "tnbresa",
-  path: "40PtFR3",
-  destination:
-    "https://tn.tunisiebooking.com/theme/rsitv2_new_v2.php?item=c291cmNiX2NvbW09d2VjJTJDZGVza3RvcCZ2aWxsZV90eHQ9TFoZGlhJmikX3htbF9ob3RlbDOmdmlsbGU9TWFoZlhJmRlcQ9TWFoZGlhJmikX3",
-  title: "Tunisiebooking.com vacances a prix promos",
-  tags: "40PtFR3",
-};
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function EditLinkPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const linkId = searchParams.get("id"); // Récupérer l'ID depuis l'URL
+  const [linkData, setLinkData] = useState({
+    destination: "",
+    titre: "",
+    chemin_personnalise: "",
+    utm_term: "",
+    utm_content: "",
+    utm_campaign: "",
+    utm_source: "",
+    utm_medium: "",
+  });
+
+  useEffect(() => {
+    if (linkId) {
+      fetch(`/api/shortlinks/${linkId}`)
+        .then((res) => res.json())
+        .then((data) => setLinkData(data))
+        .catch((err) => console.error("Erreur lors du chargement:", err));
+    }
+  }, [linkId]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/shortlinks/${linkId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(linkData),
+      });
+
+      if (response.ok) {
+        router.push("/shortlinks"); // Redirection après modification
+      } else {
+        console.error("Erreur de mise à jour");
+      }
+    } catch (error) {
+      console.error("Erreur réseau:", error);
+    }
+  };
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -28,7 +62,10 @@ export default function EditLinkPage() {
         <main className="flex-1">
           <div className="container mx-auto p-4 md:p-6 max-w-3xl">
             <div className="flex items-center gap-4 mb-8">
-              <Link href="/shortlinks" className="p-2 hover:bg-accent rounded-full">
+              <Link
+                href="/shortlinks"
+                className="p-2 hover:bg-accent rounded-full"
+              >
                 <ArrowLeft className="h-6 w-6" />
               </Link>
               <h1 className="text-2xl font-semibold">Modification du lien</h1>
@@ -74,7 +111,7 @@ export default function EditLinkPage() {
               </div>
 
               <Button
-                type="submit"
+                onClick={handleSubmit}
                 className="w-full bg-[#4169E1] hover:bg-[#4169E1]/90"
               >
                 MODIFIER

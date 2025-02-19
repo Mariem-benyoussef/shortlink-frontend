@@ -10,7 +10,7 @@ import {
 import { Input } from "@/app/components/ui/Input";
 import { Label } from "@/app/components/ui/Label";
 import { Switch } from "@/app/components/ui/Switch";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function CreateLinkForm() {
   const [formData, setFormData] = useState({
@@ -26,6 +26,7 @@ export default function CreateLinkForm() {
   });
   const [error, setError] = useState(null);
   const [shortlink, setShortlink] = useState(null);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -34,29 +35,95 @@ export default function CreateLinkForm() {
     }));
   };
 
+  // Fonction pour vérifier l'unicité du chemin personnalisé
+  const checkCheminUnique = async (chemin) => {
+    try {
+      const response = await fetch(`/api`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chemin_personnalise: chemin }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Server error or invalid response");
+      }
+
+      const data = await response.json();
+      console.log("response data", data);
+
+      return data.isUnique; // Assuming the Laravel API responds with { isUnique: true/false }
+    } catch (error) {
+      console.error("Erreur lors de la vérification du chemin :", error);
+      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      return false;
+    }
+  };
+
   const handleSubmit = async () => {
     setError(null);
     setShortlink(null);
+
+    if (!formData.destination) {
+      setError("Le champ Destination est obligatoire.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/shortlinks", {
+      new URL(formData.destination); // Validate URL format
+    } catch (err) {
+      setError("Veuillez entrer une URL valide pour le champ Destination.");
+      return;
+    }
+
+    // Vérification de l'unicité du chemin personnalisé (sil est rempli, cest facultatif)
+    if (formData.chemin_personnalise) {
+      const isCheminUnique = await checkCheminUnique(
+        formData.chemin_personnalise
+      );
+      if (!isCheminUnique) {
+        setError("Le champ Chemin personnalisé doit être unique.");
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch(`/api/shortlinks`, {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Accept: "application/json",
         },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-      // console.log("dataaa", data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(
+          errorData.error ||
+            "Une erreur s'est produite lors de la création du lien."
+        );
+        return;
+      }
 
-      setShortlink(data);
-      console.log("Lien créé avec succès :", shortlink);
+      const data = await response.json();
+      setShortlink(data); // Store the created shortlink
     } catch (error) {
       console.error("Erreur lors de la création du lien :", error);
-      setError(error.message);
-      alert("Erreur lors de la création du lien.");
+      setError("Une erreur inattendue s'est produite.");
     }
   };
+
+  useEffect(() => {
+    console.log("Updated formData:", formData);
+  }, [formData]);
+
+  useEffect(() => {
+    if (shortlink) {
+      console.log("Lien créé avec succès :", shortlink);
+    }
+  }, [shortlink]);
 
   return (
     <Card className="border-2 border-blue-100">
@@ -91,7 +158,11 @@ export default function CreateLinkForm() {
             <div className="flex gap-2">
               <div className="flex-1">
                 <Label>Domaine</Label>
-                <Input placeholder="tnbresa" disabled />
+                <Input
+                  placeholder="tnbresa"
+                  disabled
+                  className="bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none"
+                />
               </div>
               <div className="flex items-center pt-8">/</div>
               <div className="flex-1">
@@ -117,7 +188,6 @@ export default function CreateLinkForm() {
                 }
               />
             </div>
-
             {formData.showUtm && (
               <div className="space-y-4 pt-2">
                 <div className="grid grid-cols-2 gap-4">
@@ -186,7 +256,8 @@ export default function CreateLinkForm() {
         {error && <p className="text-red-500 mt-2">{error}</p>}
         {shortlink && (
           <p className="text-green-500 mt-2">
-            Lien créé avec succès : {shortlink.destination}
+            {/* Lien créé avec succès : {shortlink.destination} */}
+            Lien créé avec succès!
           </p>
         )}
       </CardContent>
