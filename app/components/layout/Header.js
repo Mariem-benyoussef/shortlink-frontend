@@ -2,6 +2,13 @@ import { Input } from "../ui/Input";
 import { Search } from "../ui/Search";
 import { Avatar, AvatarFallback } from "../ui/Avatar";
 import { Button } from "../ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/Dropdown-menu";
+import { Bell, LogOut, Settings } from "lucide-react";
 
 export default function Header() {
   return (
@@ -33,10 +40,27 @@ export default function Header() {
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
           </svg>
         </Button>
-        <Avatar>
-          {/* <AvatarImage src="/placeholder.svg" /> */}
-          <AvatarFallback>MO</AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="cursor-pointer">
+              <AvatarFallback>MO</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => alert("Ouvrir les paramètres")}>
+              <Settings className="w-5 h-5 mr-3" />
+              Paramètres
+            </DropdownMenuItem>
+            {/* <DropdownMenuItem onClick={() => alert("Changer de compte")}>
+              <Bell className="w-5 h-5 mr-3" />
+              Notifications
+            </DropdownMenuItem> */}
+            <DropdownMenuItem onClick={() => alert("Déconnexion")}>
+              <LogOut className="w-5 h-5 mr-3" />
+              Déconnexion
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

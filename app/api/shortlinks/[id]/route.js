@@ -43,7 +43,7 @@ async function deleteShortlink(id) {
 // Gestionnaire GET pour récupérer un lien spécifique
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const shortlink = await fetchShortlinkById(id);
     return NextResponse.json(shortlink);
   } catch (error) {
@@ -58,7 +58,7 @@ export async function GET(request, { params }) {
 // Gestionnaire PUT pour modifier un lien
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
     const updatedShortlink = await updateShortlink(id, data);
     return NextResponse.json(updatedShortlink);
@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
 // Gestionnaire DELETE pour supprimer un lien
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await deleteShortlink(id);
     return NextResponse.json({ message: "Lien supprimé avec succès." });
   } catch (error) {

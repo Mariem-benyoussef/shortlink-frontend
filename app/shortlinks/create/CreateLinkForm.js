@@ -9,7 +9,9 @@ import {
 } from "@/app/components/ui/Card";
 import { Input } from "@/app/components/ui/Input";
 import { Label } from "@/app/components/ui/Label";
+import SuccessModal from "@/app/components/ui/SuccessModal";
 import { Switch } from "@/app/components/ui/Switch";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function CreateLinkForm() {
@@ -24,9 +26,10 @@ export default function CreateLinkForm() {
     utm_source: "",
     utm_medium: "",
   });
+  const router = useRouter();
   const [error, setError] = useState(null);
   const [shortlink, setShortlink] = useState(null);
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -108,7 +111,10 @@ export default function CreateLinkForm() {
       }
 
       const data = await response.json();
-      setShortlink(data); // Store the created shortlink
+      setShortlink(data.data); // Stocker le lien raccourci créé
+      // console.log("dataaa", data.data);
+      // console.log("Shortlink dataaaaaa id:", data.data.id);
+      setShowSuccessModal(true); // Afficher le modal après la création du lie
     } catch (error) {
       console.error("Erreur lors de la création du lien :", error);
       setError("Une erreur inattendue s'est produite.");
@@ -124,7 +130,10 @@ export default function CreateLinkForm() {
       console.log("Lien créé avec succès :", shortlink);
     }
   }, [shortlink]);
-
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    router.push("/shortlinks");
+  };
   return (
     <Card className="border-2 border-blue-100">
       <CardHeader>
@@ -252,13 +261,24 @@ export default function CreateLinkForm() {
         >
           Créer votre lien
         </Button>
-
+        {/* Affichage du modal de succès */}
+        {showSuccessModal && shortlink && (
+          <SuccessModal
+            isOpen={showSuccessModal}
+            onClose={handleCloseModal}
+            shortUrl={shortlink.destination}
+            onViewDetails={() => {
+              if (shortlink?.id) {
+                window.location.href = `/shortlinks/details/${shortlink.id}`;
+              } else {
+                console.error("ID du shortlink non défini");
+              }
+            }}
+          />
+        )}
         {error && <p className="text-red-500 mt-2">{error}</p>}
         {shortlink && (
-          <p className="text-green-500 mt-2">
-            {/* Lien créé avec succès : {shortlink.destination} */}
-            Lien créé avec succès!
-          </p>
+          <p className="text-green-500 mt-2">Lien créé avec succès!</p>
         )}
       </CardContent>
     </Card>

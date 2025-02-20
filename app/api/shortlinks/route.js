@@ -75,8 +75,17 @@ export async function POST(request) {
       utm_medium,
     } = await request.json();
 
-    console.log("Received data:", { destination, titre, chemin_personnalise, utm_term, utm_content, utm_campaign, utm_source, utm_medium });
-    
+    console.log("Received data:", {
+      destination,
+      titre,
+      chemin_personnalise,
+      utm_term,
+      utm_content,
+      utm_campaign,
+      utm_source,
+      utm_medium,
+    });
+
     const shortlink = await createShortlink({
       destination,
       titre,
@@ -87,7 +96,6 @@ export async function POST(request) {
       utm_source,
       utm_medium,
     });
-    console.log("Shortlink dataaaaaa:", shortlink);
     return NextResponse.json(shortlink);
   } catch (error) {
     return NextResponse.json(
