@@ -10,14 +10,19 @@ import { useEffect, useState } from "react";
 
 export default function EditLinkPage() {
   const router = useRouter();
-
   const { id } = useParams();
-
+  
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [initialDestination, setInitialDestination] = useState(""); // Stocke la valeur originale de destination
+  const [initialChemin, setInitialChemin] = useState(""); // Stocke la valeur originale de chemin_personnalise
+  
   const [linkData, setLinkData] = useState({
     destination: "",
     titre: "",
+    domaine: "",
     chemin_personnalise: "",
-    domain: "",
     utm_term: "",
     utm_content: "",
     utm_campaign: "",
@@ -27,9 +32,7 @@ export default function EditLinkPage() {
 
   useEffect(() => {
     const fetchLinkData = async () => {
-      console.log("id", id);
       if (!id) return;
-
       try {
         const response = await fetch(`/api/shortlinks/${id}`, {
           method: "GET",
@@ -44,6 +47,8 @@ export default function EditLinkPage() {
 
         const data = await response.json();
         setLinkData(data);
+        setInitialDestination(data.destination); // Stocke la destination actuelle
+        setInitialChemin(data.chemin_personnalise); // Stocke le chemin_personnalise actuel
       } catch (error) {
         console.error("Erreur lors du chargement :", error);
       }
@@ -52,8 +57,91 @@ export default function EditLinkPage() {
     fetchLinkData();
   }, [id]);
 
+  const checkCheminUnique = async (chemin) => {
+    try {
+      const response = await fetch(`/api`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chemin_personnalise: chemin }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Server error or invalid response");
+      }
+
+      const data = await response.json();
+      return data.isUnique;
+    } catch (error) {
+      console.error("Erreur lors de la vérification du chemin :", error);
+      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      return false;
+    }
+  };
+
+  const checkDestinationUnique = async (destination) => {
+    try {
+      const response = await fetch(`/api`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ destination }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Server error or invalid response");
+      }
+
+      const data = await response.json();
+      return data.isUnique;
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la destination :", error);
+      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    if (!linkData.destination) {
+      setError("Le champ Destination est obligatoire.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      new URL(linkData.destination);
+    } catch (err) {
+      setError("Veuillez entrer une URL valide pour le champ Destination.");
+      setIsLoading(false);
+      return;
+    }
+
+    // Vérifier l’unicité de la destination uniquement si elle a changé
+    if (linkData.destination !== initialDestination) {
+      const isDestinationUnique = await checkDestinationUnique(linkData.destination);
+      if (!isDestinationUnique) {
+        setError("Le champ Destination doit être unique.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Vérifier l’unicité du chemin_personnalise uniquement si il a changé
+    if (linkData.chemin_personnalise !== initialChemin) {
+      const isCheminUnique = await checkCheminUnique(linkData.chemin_personnalise);
+      if (!isCheminUnique) {
+        setError("Le champ Chemin personnalisé doit être unique.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`/api/shortlinks/${id}`, {
         method: "PUT",
@@ -67,9 +155,13 @@ export default function EditLinkPage() {
         router.push("/shortlinks");
       } else {
         console.error("Erreur de mise à jour");
+        setError("Une erreur est survenue lors de la mise à jour.");
       }
     } catch (error) {
       console.error("Erreur réseau:", error);
+      setError("Une erreur est survenue lors de la mise à jour.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,23 +230,15 @@ export default function EditLinkPage() {
                       className="mt-2"
                     />
                   </div>
-                  <div>
-                    <Label>Étiquettes</Label>
-                    <Input
-                      name="chemin_personnalise"
-                      value={linkData.chemin_personnalise || ""}
-                      onChange={handleChange}
-                      className="mt-2"
-                    />
-                  </div>
                 </div>
               </div>
 
+              {error && <p className="text-red-500">{error}</p>}
               <Button
                 type="submit"
                 className="w-full bg-[#4169E1] hover:bg-[#4169E1]/90"
               >
-                MODIFIER
+                {isLoading ? "En cours..." : "MODIFIER"}
               </Button>
             </form>
           </div>

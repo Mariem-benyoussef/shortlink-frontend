@@ -82,7 +82,7 @@ function AddButton() {
 
   return (
     <Button
-      className="bg-[#4169E1] hover:bg-[#4169E1]/90"
+      className="bg-[#4169E1] hover:bg-[#4169E1]/90 text-white"
       onClick={handleRedirect}
     >
       Créer un lien

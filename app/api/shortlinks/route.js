@@ -51,9 +51,9 @@ export async function createShortlink(data) {
       body: JSON.stringify(data),
     });
 
-    console.log("responseeeee", response);
+    // console.log("responseeeee", response);
     const shortlinkData = await response.json();
-    console.log("shortlinkDataaaaa", shortlinkData);
+    // console.log("shortlinkDataaaaa", shortlinkData);
     return shortlinkData;
   } catch (error) {
     console.error("Error in createShortlink:", error);
@@ -75,16 +75,16 @@ export async function POST(request) {
       utm_medium,
     } = await request.json();
 
-    console.log("Received data:", {
-      destination,
-      titre,
-      chemin_personnalise,
-      utm_term,
-      utm_content,
-      utm_campaign,
-      utm_source,
-      utm_medium,
-    });
+    // console.log("Received data:", {
+    //   destination,
+    //   titre,
+    //   chemin_personnalise,
+    //   utm_term,
+    //   utm_content,
+    //   utm_campaign,
+    //   utm_source,
+    //   utm_medium,
+    // });
 
     const shortlink = await createShortlink({
       destination,

@@ -16,6 +16,7 @@ export default function SuccessModal({
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(shortUrl);
+      // console.log("shortUrl", shortUrl);
       toast.success("URL copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy text: ", err);

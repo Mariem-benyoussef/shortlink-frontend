@@ -57,24 +57,26 @@ export default function LinksPage() {
 
   const getFavicon = (url) => {
     try {
-      const domain = new URL(url).origin;
+      const domain = new URL(url).hostname;
+      // const domain = new URL(url).origin;
       return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
     } catch (error) {
       console.error("Invalid URL:", url);
-      return "/placeholder.svg"; // Image par défaut si l'URL est invalide
+      return "/favicon-standard.svg";
     }
   };
 
   const copyToClipboard = async (link) => {
     try {
-      await navigator.clipboard.writeText(link.destination);
+      const shortLink = `https://${link.domaine}.com/${link.chemin_personnalise}`;
+      // console.log("shortLink", shortLink);
+      await navigator.clipboard.writeText(shortLink);
       toast.success("URL copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy text: ", err);
       toast.error("Failed to copy URL.");
     }
   };
-
   // Open delete confirmation modal
   const openDeleteDialog = (id) => {
     setDeleteId(id);
@@ -170,7 +172,10 @@ export default function LinksPage() {
                     >
                       <div className="flex items-center gap-4">
                         <Image
-                          src={getFavicon(link.destination)}
+                          src={
+                            getFavicon(link.destination) ||
+                            "/favicon-standard.svg"
+                          }
                           alt="favicon"
                           width={48} // Ajuste selon tes besoins
                           height={48}
@@ -179,8 +184,9 @@ export default function LinksPage() {
                         />
 
                         <div className="flex-1 min-w-0">
+                          <h3 className="font-medium truncate">{link.titre}</h3>
                           <h3 className="font-medium truncate">
-                            {link.destination}
+                            {`${link.domaine}.com/${link.chemin_personnalise}`}
                           </h3>
                         </div>
                       </div>

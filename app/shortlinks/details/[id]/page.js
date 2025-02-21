@@ -35,8 +35,8 @@ export default function LinkDetailsPage() {
   const [linkData, setLinkData] = useState({
     destination: "",
     titre: "",
+    domaine: "",
     chemin_personnalise: "",
-    domain: "",
     utm_term: "",
     utm_content: "",
     utm_campaign: "",
@@ -76,16 +76,18 @@ export default function LinkDetailsPage() {
 
   const getFavicon = (url) => {
     try {
-      const domain = new URL(url).origin;
+      const domain = new URL(url).hostname;
       return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
     } catch (error) {
       console.error("Invalid URL:", url);
-      return "/placeholder.svg"; // Image par défaut si l'URL est invalide
+      return "/favicon-standard.svg";
     }
   };
   const copyToClipboard = async (linkData) => {
     try {
-      await navigator.clipboard.writeText(linkData.destination);
+      // await navigator.clipboard.writeText(linkData.destination);
+      const shortLink = `https://${linkData.domaine}.com/${linkData.chemin_personnalise}`;
+      await navigator.clipboard.writeText(shortLink);
       toast.success("URL copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy text: ", err);
@@ -136,7 +138,10 @@ export default function LinkDetailsPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <Image
-                      src={getFavicon(linkData.destination)}
+                      src={
+                        getFavicon(linkData.destination) ||
+                        "/favicon-standard.svg"
+                      }
                       alt="favicon"
                       width={48}
                       height={48}
@@ -145,9 +150,11 @@ export default function LinkDetailsPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium truncate">{linkData.titre}</h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {linkData.destination}
-                      </p>
+                      {/* <p className="text-sm text-muted-foreground truncate">
+                        {linkData.destination} */}
+                      <h3 className="font-medium truncate">
+                        {`${linkData.domaine}.com/${linkData.chemin_personnalise}`}
+                      </h3>
                     </div>
 
                     <div className="flex items-center gap-2">

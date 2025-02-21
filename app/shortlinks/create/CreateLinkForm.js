@@ -18,6 +18,7 @@ export default function CreateLinkForm() {
   const [formData, setFormData] = useState({
     destination: "",
     titre: "",
+    domaine: "",
     chemin_personnalise: "",
     showUtm: false,
     utm_term: "",
@@ -54,7 +55,7 @@ export default function CreateLinkForm() {
       }
 
       const data = await response.json();
-      console.log("response data", data);
+      // console.log("response data", data);
 
       return data.isUnique; // Assuming the Laravel API responds with { isUnique: true/false }
     } catch (error) {
@@ -63,7 +64,31 @@ export default function CreateLinkForm() {
       return false;
     }
   };
+  const checkDestinationUnique = async (destination) => {
+    try {
+      const response = await fetch(`/api`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ destination: destination }),
+      });
 
+      if (!response.ok) {
+        throw new Error("Server error or invalid response");
+      }
+
+      const data = await response.json();
+      // console.log("response data", data);
+      // console.log("response data is UnIQUE", data.isUnique);
+
+      return data.isUnique;
+    } catch (error) {
+      console.error("Erreur lors de la vérification du destination :", error);
+      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      return false;
+    }
+  };
   const handleSubmit = async () => {
     setError(null);
     setShortlink(null);
@@ -73,6 +98,15 @@ export default function CreateLinkForm() {
       return;
     }
 
+    if (formData.destination) {
+      const isDestinationUnique = await checkDestinationUnique(
+        formData.destination
+      );
+      if (!isDestinationUnique) {
+        setError("Le champ destination doit être unique.");
+        return;
+      }
+    }
     try {
       new URL(formData.destination); // Validate URL format
     } catch (err) {
@@ -257,7 +291,7 @@ export default function CreateLinkForm() {
 
         <Button
           onClick={handleSubmit}
-          className="w-full bg-[#4169E1] hover:bg-[#4169E1]/90"
+          className="w-full bg-[#4169E1] hover:bg-[#4169E1]/90 text-white"
         >
           Créer votre lien
         </Button>
@@ -266,7 +300,10 @@ export default function CreateLinkForm() {
           <SuccessModal
             isOpen={showSuccessModal}
             onClose={handleCloseModal}
-            shortUrl={shortlink.destination}
+            // shortUrl={`https://${shortlink.domaine}.com/${shortlink.chemin_personnalise}`}
+            shortUrl={`https://${shortlink?.domaine || "tnbresa"}.com/${
+              shortlink?.chemin_personnalise
+            }`}
             onViewDetails={() => {
               if (shortlink?.id) {
                 window.location.href = `/shortlinks/details/${shortlink.id}`;
