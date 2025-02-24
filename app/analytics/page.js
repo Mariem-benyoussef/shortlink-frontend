@@ -13,7 +13,6 @@ const Analytics = () => {
       try {
         const apiUrl = "/api/analytics"; // Use absolute URL if needed, e.g., "https://example.com/api/analytics"
         const response = await fetch(apiUrl);
-        console.log("response2", response);
 
         if (!response.ok) {
           throw new Error(
@@ -65,6 +64,16 @@ const Analytics = () => {
 
       <h3>Liens les plus performants</h3>
       <pre>{JSON.stringify(analyticsData.topLinks || {}, null, 2)}</pre>
+
+      {/* Add shortlink stats if available */}
+      {analyticsData.shortlinkStats && (
+        <>
+          <h3>Statistiques du Shortlink</h3>
+          <pre>
+            {JSON.stringify(analyticsData.shortlinkStats || {}, null, 2)}
+          </pre>
+        </>
+      )}
     </div>
   );
 };

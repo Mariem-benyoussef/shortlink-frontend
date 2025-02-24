@@ -23,14 +23,21 @@ import {
   DialogTitle,
 } from "@/app/components/ui/Dialog";
 import Image from "next/image";
+import CountryBarChart from "@/app/components/charts/CountryBarChart";
+import DevicePieChart from "@/app/components/charts/DevicePieChart";
 
 export default function LinkDetailsPage() {
   const [links, setLinks] = useState([]);
-  const [activeDataset, setActiveDataset] = useState("last4Days");
+  // const [activeDataset, setActiveDataset] = useState("last4Days");
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState({
+    countries: [],
+    devices: [],
+    sources: [],
+  });
   const { id } = useParams();
   const [linkData, setLinkData] = useState({
     destination: "",
@@ -46,7 +53,6 @@ export default function LinkDetailsPage() {
   const router = useRouter();
   useEffect(() => {
     const fetchLinkData = async () => {
-      // console.log("id", id);
       if (!id) return;
       setLoading(true);
       setError(null);
@@ -64,6 +70,21 @@ export default function LinkDetailsPage() {
 
         const data = await response.json();
         setLinkData(data);
+
+        const analyticsResponse = await fetch(
+          `/api/shortlinks/${data.destination}`,
+          {
+            method: "GET",
+            headers: {
+
+              "Content-Type": "application/json",
+              
+            },
+          }
+        );
+        const analyticsData = await analyticsResponse.json();
+        setAnalyticsData(analyticsData);
+        console.log("analyticsDataaaaaaaaaaaaaaaaaa", analyticsData);
       } catch (error) {
         console.error("Erreur lors du chargement :", error);
       } finally {
@@ -220,77 +241,18 @@ export default function LinkDetailsPage() {
                 </CardContent>
               </Card>
 
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">
-                    Clics + scans dans la durée
-                  </h2>
-                  <Link
-                    href="#"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    voir rapport
-                  </Link>
-                </div>
+              {/* Graphique des pays */}
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">Clics par pays</h2>
+                <CountryBarChart data={analyticsData.countries} />
+              </div>
 
-                <div className="flex items-center gap-4 text-sm">
-                  <button
-                    onClick={() => setActiveDataset("last4Days")}
-                    className={`flex items-center gap-2 ${
-                      activeDataset === "last4Days"
-                        ? "text-blue-600"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <div className="w-3 h-3 rounded-full bg-blue-600" />
-                    Last 4 days
-                  </button>
-                  <button
-                    onClick={() => setActiveDataset("lastWeek")}
-                    className={`flex items-center gap-2 ${
-                      activeDataset === "lastWeek"
-                        ? "text-blue-600"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <div className="w-3 h-3 rounded-full bg-blue-600 opacity-50" />
-                    Last Week
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between mt-6">
-                  <p className="text-sm text-muted-foreground">
-                    Affichage des données
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                      {"<"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 bg-primary text-primary-foreground"
-                    >
-                      1
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                      2
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                      3
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                      4
-                    </Button>
-                    <span className="mx-2">...</span>
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                      40
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                      {">"}
-                    </Button>
-                  </div>
-                </div>
+              {/* Graphique des appareils */}
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">
+                  Clics par appareil
+                </h2>
+                <DevicePieChart data={analyticsData.devices} />
               </div>
             </div>
           </main>

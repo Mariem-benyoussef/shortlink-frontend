@@ -83,3 +83,34 @@ export async function DELETE(request, { params }) {
     );
   }
 }
+
+// Fetch analytics data for a shortlink
+async function fetchShortlinkAnalytics(destination) {
+  // const encodedDestination = encodeURIComponent(destination);
+  const response = await fetch(`${API_URL}/details/${destination}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  console.log("response", response);
+  if (!response.ok) {
+    throw new Error("Analytics introuvables");
+  }
+  return await response.json();
+}
+
+// Gestionnaire GET pour récupérer les analytics d'un lien via la destination
+export async function GET_ANALYTICS(request, { params }) {
+  try {
+    const { destination } = await params;
+    const analytics = await fetchShortlinkAnalytics(destination);
+    return NextResponse.json(analytics);
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch analytics", details: error.message },
+      { status: 500 }
+    );
+  }
+}

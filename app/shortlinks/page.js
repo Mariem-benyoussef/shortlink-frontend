@@ -161,100 +161,108 @@ export default function LinksPage() {
                 </Select>
               </div>
               <div className="space-y-4">
-                {currentLinks.map((link) => (
-                  <div
-                    key={link.id}
-                    className="flex items-center gap-4 p-4 bg-card rounded-lg border"
-                  >
-                    <Link
-                      href={`/shortlinks/details/${link.id}`}
-                      className="block flex-1 min-w-0"
+                {filteredLinks.length === 0 ? (
+                  <p className="text-center text-muted-foreground">
+                    Vous n&apos;avez pas encore ajouté de lien.
+                  </p>
+                ) : (
+                  currentLinks.map((link) => (
+                    <div
+                      key={link.id}
+                      className="flex items-center gap-4 p-4 bg-card rounded-lg border"
                     >
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src={
-                            getFavicon(link.destination) ||
-                            "/favicon-standard.svg"
-                          }
-                          alt="favicon"
-                          width={48} // Ajuste selon tes besoins
-                          height={48}
-                          className="rounded-lg object-cover"
-                          unoptimized // Désactive l'optimisation si tu veux éviter les erreurs sur des images externes
-                        />
-
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium truncate">{link.titre}</h3>
-                          <h3 className="font-medium truncate">
-                            {`${link.domaine}.com/${link.chemin_personnalise}`}
-                          </h3>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => copyToClipboard(link)}
+                      <Link
+                        href={`/shortlinks/details/${link.id}`}
+                        className="block flex-1 min-w-0"
                       >
-                        <Copy className="h-4 w-4 mr-2" /> Copier
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="text-pink-600"
-                        onClick={async () => {
-                          if (navigator.share) {
-                            try {
-                              await navigator.share({
-                                title:
-                                  "Je partage avec vous ce lien intéressant!",
-                                text: `Voici le lien: ${link.destination}`,
-                                url: link.destination,
-                              });
-                              // toast.success("Lien partagé avec succès !");
-                            } catch (error) {
-                              console.error("Error sharing:", error);
-                              toast.error("Échec du partage.");
+                        <div className="flex items-center gap-4">
+                          <Image
+                            src={
+                              getFavicon(link.destination) ||
+                              "/favicon-standard.svg"
                             }
-                          } else {
-                            toast.error(
-                              "Le partage n'est pas supporté sur cet appareil."
-                            );
-                          }
-                        }}
-                      >
-                        <Share2 className="h-4 w-4 mr-2" /> Partager
-                      </Button>
+                            alt="favicon"
+                            width={48} // Ajuste selon tes besoins
+                            height={48}
+                            className="rounded-lg object-cover"
+                            unoptimized // Désactive l'optimisation si tu veux éviter les erreurs sur des images externes
+                          />
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/shortlinks/edit/${link.id}`}>
-                              Modifier
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => openDeleteDialog(link.id)}
-                          >
-                            Supprimer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium truncate">
+                              {link.titre}
+                            </h3>
+                            <h3 className="font-medium truncate">
+                              {`${link.domaine}.com/${link.chemin_personnalise}`}
+                            </h3>
+                          </div>
+                        </div>
+                      </Link>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => copyToClipboard(link)}
+                        >
+                          <Copy className="h-4 w-4 mr-2" /> Copier
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="text-pink-600"
+                          onClick={async () => {
+                            if (navigator.share) {
+                              try {
+                                await navigator.share({
+                                  title:
+                                    "Je partage avec vous ce lien intéressant!",
+                                  text: `Voici le lien: ${link.destination}`,
+                                  url: link.destination,
+                                });
+                                // toast.success("Lien partagé avec succès !");
+                              } catch (error) {
+                                console.error("Error sharing:", error);
+                                toast.error("Échec du partage.");
+                              }
+                            } else {
+                              toast.error(
+                                "Le partage n'est pas supporté sur cet appareil."
+                              );
+                            }
+                          }}
+                        >
+                          <Share2 className="h-4 w-4 mr-2" /> Partager
+                        </Button>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/shortlinks/edit/${link.id}`}>
+                                Modifier
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => openDeleteDialog(link.id)}
+                            >
+                              Supprimer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
               <div className="flex items-center justify-between mt-6">
