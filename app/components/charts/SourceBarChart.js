@@ -8,7 +8,7 @@ import {
   Legend,
 } from "recharts";
 
-export default function CountryBarChart({ data }) {
+export default function SourceBarChart({ data }) {
   return (
     <BarChart
       width={600}
@@ -22,11 +22,11 @@ export default function CountryBarChart({ data }) {
       }}
     >
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="country" />
+      <XAxis dataKey="source" />
       <YAxis />
       <Tooltip />
       <Legend />
-      <Bar dataKey="clicks" fill="#8884d8" />
+      <Bar dataKey="clicks" fill="#82ca9d" />
     </BarChart>
   );
 }

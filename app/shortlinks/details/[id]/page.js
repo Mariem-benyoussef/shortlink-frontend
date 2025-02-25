@@ -25,10 +25,11 @@ import {
 import Image from "next/image";
 import CountryBarChart from "@/app/components/charts/CountryBarChart";
 import DevicePieChart from "@/app/components/charts/DevicePieChart";
+import AnalyticsDataFetcher from "@/app/components/AnalyticsDataFetcher";
+import SourceBarChart from "@/app/components/charts/SourceBarChart";
 
 export default function LinkDetailsPage() {
   const [links, setLinks] = useState([]);
-  // const [activeDataset, setActiveDataset] = useState("last4Days");
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,23 +71,8 @@ export default function LinkDetailsPage() {
 
         const data = await response.json();
         setLinkData(data);
-
-        const analyticsResponse = await fetch(
-          `/api/shortlinks/${data.destination}`,
-          {
-            method: "GET",
-            headers: {
-
-              "Content-Type": "application/json",
-              
-            },
-          }
-        );
-        const analyticsData = await analyticsResponse.json();
-        setAnalyticsData(analyticsData);
-        console.log("analyticsDataaaaaaaaaaaaaaaaaa", analyticsData);
       } catch (error) {
-        console.error("Erreur lors du chargement :", error);
+        console.error("Erreur lors du chargement du lien :", error);
       } finally {
         setLoading(false);
       }
@@ -94,6 +80,49 @@ export default function LinkDetailsPage() {
 
     fetchLinkData();
   }, [id]);
+
+  // useEffect(() => {
+  //   const fetchAnalyticsData = async (destination) => {
+  //     // Properly encode the destination URL
+  //     const encodedUrl = encodeURIComponent(destination);
+  //     console.log("Fetching analytics for:", encodedUrl);
+
+  //     try {
+  //       const response = await fetch(`/api/shortlinks/${encodedUrl}`, {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Application: "application/json",
+  //         },
+  //       });
+
+  //       console.log("Response:", response);
+  //       console.log("Response.json:", response.json());
+
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch analytics");
+  //       }
+
+  //       const data = await response.json();
+  //       setAnalyticsData({
+  //         countries: data.countries || [],
+  //         devices: data.devices || [],
+  //         sources: data.sources || [],
+  //       });
+  //     } catch (error) {
+  //       console.error("Error fetching analytics:", error);
+  //       setError("Failed to fetch analytics");
+  //     }
+  //   };
+
+  //   // Fetch analytics data when linkData.destination changes
+  //   if (linkData && linkData.destination) {
+  //     console.log("Fetching analytics forrrrrrrrrrrrr:", linkData.destination);
+  //     fetchAnalyticsData(linkData.destination);
+  //   } else {
+  //     console.error("No destination URL available");
+  //   }
+  // }, [linkData, linkData.destination]); // Dependency is linkData.destination
 
   const getFavicon = (url) => {
     try {
@@ -240,19 +269,27 @@ export default function LinkDetailsPage() {
                   </div>
                 </CardContent>
               </Card>
+              <AnalyticsDataFetcher
+                destination={linkData.destination}
+                setAnalyticsData={setAnalyticsData}
+                setError={setError}
+              />
 
-              {/* Graphique des pays */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold mb-4">Clics par pays</h2>
                 <CountryBarChart data={analyticsData.countries} />
               </div>
 
-              {/* Graphique des appareils */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold mb-4">
                   Clics par appareil
                 </h2>
                 <DevicePieChart data={analyticsData.devices} />
+              </div>
+
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">Clics par source</h2>
+                <SourceBarChart data={analyticsData.sources} />
               </div>
             </div>
           </main>
