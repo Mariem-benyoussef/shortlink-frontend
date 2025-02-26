@@ -22,7 +22,6 @@ import {
 
 import Header from "../components/layout/Header";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +30,9 @@ import {
   DialogTitle,
 } from "../components/ui/Dialog";
 import Image from "next/image";
+import { Search } from "../components/ui/Search";
+import { DatePickerModal } from "../components/ui/DatePickerModal";
+import { AdditionalFiltersModal } from "../components/ui/AdditionalFiltersModal";
 
 export default function LinksPage() {
   const [links, setLinks] = useState([]);
@@ -38,7 +40,29 @@ export default function LinksPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [selectedDomain, setSelectedDomain] = useState("all");
   const itemsPerPage = 5;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAdditionalFiltersModalOpen, setIsAdditionalFiltersModalOpen] =
+    useState(false);
+  const [filters, setFilters] = useState({
+    status: "all", // Filtre par statut
+    minClicks: "", // Filtre par nombre de clics minimum
+  });
+  const [selectedLinks, setSelectedLinks] = useState([]);
+  const [maskedLinkIds, setMaskedLinkIds] = useState([]);
+  const isFilterActive = () => {
+    return (
+      searchTerm !== "" ||
+      selectedDomain !== "all" ||
+      startDate !== null ||
+      endDate !== null ||
+      filters.status !== "all" ||
+      filters.minClicks !== ""
+    );
+  };
 
   useEffect(() => {
     const fetchLinks = async () => {
@@ -55,6 +79,11 @@ export default function LinksPage() {
     fetchLinks();
   }, []);
 
+  const handleApplyDates = () => {
+    console.log("Date de création:", startDate);
+    console.log("Date d'expération:", endDate);
+    setIsModalOpen(false);
+  };
   const getFavicon = (url) => {
     try {
       const domain = new URL(url).hostname;
@@ -77,13 +106,11 @@ export default function LinksPage() {
       toast.error("Failed to copy URL.");
     }
   };
-  // Open delete confirmation modal
   const openDeleteDialog = (id) => {
     setDeleteId(id);
     setIsDeleteDialogOpen(true);
   };
 
-  // Handle delete action
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
@@ -92,7 +119,6 @@ export default function LinksPage() {
       });
       if (!response.ok) throw new Error("Erreur lors de la suppression");
 
-      // Update state after successful deletion
       setLinks(links.filter((link) => link.id !== deleteId));
       setIsDeleteDialogOpen(false);
       setDeleteId(null);
@@ -101,19 +127,33 @@ export default function LinksPage() {
     }
   };
 
-  // const handleUpdate = (id) => {
-  //   router.push(`/shortlinks/edit/${id}`);
-  // };
-
-  // const filteredLinks = links;
-  const filteredLinks = searchTerm
-    ? links.filter(
-        (link) =>
-          link.titre &&
-          link.titre.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : links;
-
+  const filteredLinks = links.filter((link) => {
+    const matchesSearch =
+      link.titre && link.titre.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDomain =
+      selectedDomain === "all" ? true : link.domaine === selectedDomain;
+    const matchesDate =
+      startDate && endDate
+        ? new Date(link.createdAt) >= startDate &&
+          new Date(link.createdAt) <= endDate
+        : true;
+    const matchesStatus =
+      filters.status === "all"
+        ? true
+        : filters.status === "active"
+        ? !maskedLinkIds.includes(link.id) // Exclure les liens masqués
+        : maskedLinkIds.includes(link.id); // Inclure uniquement les liens masqués
+    const matchesClicks = filters.minClicks
+      ? link.clicks >= parseInt(filters.minClicks)
+      : true;
+    return (
+      matchesSearch &&
+      matchesDomain &&
+      matchesDate &&
+      matchesStatus &&
+      matchesClicks
+    );
+  });
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentLinks = filteredLinks.slice(indexOfFirstItem, indexOfLastItem);
@@ -125,6 +165,43 @@ export default function LinksPage() {
     }
   };
 
+  // Sélection multiple
+  const toggleLinkSelection = (linkId) => {
+    setSelectedLinks((prevSelected) =>
+      prevSelected.includes(linkId)
+        ? prevSelected.filter((id) => id !== linkId)
+        : [...prevSelected, linkId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLinks.length === currentLinks.length) {
+      setSelectedLinks([]); // Désélectionner tout
+    } else {
+      setSelectedLinks(currentLinks.map((link) => link.id)); // Sélectionner tout
+    }
+  };
+
+  // Masquer/Démasquer les liens sélectionnés
+  const toggleMaskLinks = () => {
+    if (selectedLinks.some((id) => maskedLinkIds.includes(id))) {
+      setMaskedLinkIds((prevMasked) =>
+        prevMasked.filter((id) => !selectedLinks.includes(id))
+      );
+      toast.success("Les liens sélectionnés ont été démasqués.");
+    } else {
+      setMaskedLinkIds((prevMasked) => [...prevMasked, ...selectedLinks]);
+      toast.success("Les liens sélectionnés ont été masqués.");
+    }
+    setSelectedLinks([]);
+  };
+
+  const isAnySelectedLinkMasked = selectedLinks.some((id) =>
+    maskedLinkIds.includes(id)
+  );
+  const toggleButtonText = isAnySelectedLinkMasked
+    ? "Démasquer les liens sélectionnés"
+    : "Masquer les liens sélectionnés";
   return (
     <>
       <ToastContainer />
@@ -139,26 +216,113 @@ export default function LinksPage() {
                   <BackButton />
                   <h1 className="text-2xl font-semibold">Menu des liens</h1>
                 </div>
-                <AddButton />
+                <div className="flex items-center gap-4">
+                  <AddButton />
+                  {selectedLinks.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={toggleMaskLinks}
+                      className="px-4 py-2 text-sm font-medium"
+                    >
+                      {toggleButtonText}
+                    </Button>
+                  )}
+                </div>
               </div>
-
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <Input
-                  placeholder="Search"
-                  className="w-full"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+              {/* Sélectionner tout */}
+              <div className="flex items-center gap-4 mb-6">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedLinks.length > 0 &&
+                    selectedLinks.length === currentLinks.length
+                  }
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4"
                 />
-                <Select defaultValue="newest">
+                <span className="text-sm text-muted-foreground">
+                  Sélectionner tout
+                </span>
+              </div>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher"
+                    className="pl-8 bg-background dark:bg-darkBackground text-foreground dark:text-darkForeground border border-gray-300 dark:border-gray-600 focus:ring-[#4169E1] focus:border-[#4169E1]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="px-4 py-2 text-sm font-medium text-white bg-[#4169E1] hover:bg-[#4169E1]/90 rounded dark:bg-[#5a80e1] dark:hover:bg-[#5a80e1]/90"
+                  >
+                    Filtrer par date
+                  </button>
+
+                  <DatePickerModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onApply={handleApplyDates}
+                    startDate={startDate}
+                    setStartDate={setStartDate}
+                    endDate={endDate}
+                    setEndDate={setEndDate}
+                  />
+                </div>
+                <Select defaultValue="all" onValueChange={setSelectedDomain}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Trier par" />
+                    <SelectValue placeholder="Filtrer par domaine" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Plus récent</SelectItem>
-                    <SelectItem value="oldest">Plus ancien</SelectItem>
-                    <SelectItem value="clicks">Clics</SelectItem>
+                    <SelectItem value="all">Tous les domaines</SelectItem>
+                    {[...new Set(links.map((link) => link.domaine))].map(
+                      (domain) => (
+                        <SelectItem key={domain} value={domain}>
+                          {domain}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
+
+                {/* Bouton "Ajouter d'autres filtres" */}
+                <button
+                  onClick={() => setIsAdditionalFiltersModalOpen(true)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#4169E1] hover:bg-[#4169E1]/90 rounded dark:bg-[#5a80e1] dark:hover:bg-[#5a80e1]/90"
+                >
+                  Ajouter d&apos;autres filtres
+                </button>
+
+                {/* Bouton "Effacer les filtres" */}
+                {isFilterActive() && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedDomain("all");
+                      setStartDate(null);
+                      setEndDate(null);
+                      setFilters({ status: "all", minClicks: "" });
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-500"
+                  >
+                    Effacer les filtres
+                  </button>
+                )}
+              </div>
+              {/* Modal pour les filtres supplémentaires */}
+              <AdditionalFiltersModal
+                isOpen={isAdditionalFiltersModalOpen}
+                onClose={() => setIsAdditionalFiltersModalOpen(false)}
+                onApply={() => setIsAdditionalFiltersModalOpen(false)}
+                filters={filters}
+                setFilters={setFilters}
+              />
+              {/* Affichage du nombre de résultats */}
+              <div className="mt-4 text-sm text-muted-foreground">
+                {filteredLinks.length} résultat(s) trouvé(s)
               </div>
               <div className="space-y-4">
                 {filteredLinks.length === 0 ? (
@@ -171,6 +335,15 @@ export default function LinksPage() {
                       key={link.id}
                       className="flex items-center gap-4 p-4 bg-card rounded-lg border"
                     >
+                      {/* Case à cocher */}
+                      <input
+                        type="checkbox"
+                        checked={selectedLinks.includes(link.id)}
+                        onChange={() => toggleLinkSelection(link.id)}
+                        className="w-4 h-4"
+                      />
+
+                      {/* Contenu du lien */}
                       <Link
                         href={`/shortlinks/details/${link.id}`}
                         className="block flex-1 min-w-0"
@@ -199,6 +372,7 @@ export default function LinksPage() {
                         </div>
                       </Link>
 
+                      {/* Boutons d'actions */}
                       <div className="flex items-center gap-2">
                         <Button
                           variant="secondary"
@@ -264,7 +438,6 @@ export default function LinksPage() {
                   ))
                 )}
               </div>
-
               <div className="flex items-center justify-between mt-6">
                 <p className="text-sm text-muted-foreground">
                   Affichage des données

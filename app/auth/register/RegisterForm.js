@@ -80,7 +80,7 @@ export default function RegisterForm({ className, ...props }) {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/login");
+      router.push("/auth/login");
     } catch (error) {
       console.error(error);
     } finally {

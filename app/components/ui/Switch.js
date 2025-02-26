@@ -5,7 +5,9 @@ export function Switch({ checked, onCheckedChange, className }) {
     <button
       onClick={onCheckedChange}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        checked ? "bg-blue-500" : "bg-gray-300"
+        checked
+          ? "bg-blue-500 dark:bg-[#5a80e1] dark:hover:bg-[#5a80e1]/90"
+          : "bg-gray-300"
       } ${className}`}
     >
       <span

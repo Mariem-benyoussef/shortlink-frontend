@@ -8,7 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/Dropdown-menu";
-import { Bell, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
+import ThemeToggle from "./ToggleTheme";
 
 export default function Header() {
   return (
@@ -17,11 +18,16 @@ export default function Header() {
         <div className="flex-1">
           <form className="flex items-center">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Rechercher" className="pl-8" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+              <Input
+                placeholder="Rechercher"
+                className="pl-8 bg-background dark:bg-darkBackground text-foreground dark:text-darkForeground border border-gray-300 dark:border-gray-600 focus:ring-[#4169E1] focus:border-[#4169E1]"
+              />
             </div>
           </form>
         </div>
+        {/* 
+        <ThemeToggle /> */}
         <Button variant="ghost" className="rounded-full" size="icon">
           <span className="sr-only">Notifications</span>
           <svg
@@ -51,10 +57,9 @@ export default function Header() {
               <Settings className="w-5 h-5 mr-3" />
               Paramètres
             </DropdownMenuItem>
-            {/* <DropdownMenuItem onClick={() => alert("Changer de compte")}>
-              <Bell className="w-5 h-5 mr-3" />
-              Notifications
-            </DropdownMenuItem> */}
+            <DropdownMenuItem>
+              <ThemeToggle />
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => alert("Déconnexion")}>
               <LogOut className="w-5 h-5 mr-3" />
               Déconnexion

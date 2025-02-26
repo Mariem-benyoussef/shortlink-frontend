@@ -156,7 +156,7 @@ export default function CreateLinkForm() {
   };
 
   useEffect(() => {
-    console.log("Updated formData:", formData);
+    // console.log("Updated formData:", formData);
   }, [formData]);
 
   useEffect(() => {
@@ -169,30 +169,32 @@ export default function CreateLinkForm() {
     router.push("/shortlinks");
   };
   return (
-    <Card className="border-2 border-blue-100">
+    <Card className="border-2 border-blue-100 bg-background dark:bg-darkBackground text-foreground dark:text-darkForeground">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold">Créer un lien</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Destination</Label>
+            <Label className="dark:text-white">Destination</Label>
             <Input
               name="destination"
               value={formData.destination}
               onChange={handleChange}
               placeholder="https://exemple.com/mon-url-longue"
               required
+              className="dark:text-white dark:bg-black"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Titre (facultatif)</Label>
+            <Label className="dark:text-white">Titre (facultatif)</Label>
             <Input
               name="titre"
               value={formData.titre}
               onChange={handleChange}
               placeholder="Titre (facultatif)"
+              className="dark:text-white dark:bg-black"
             />
           </div>
 
@@ -200,21 +202,24 @@ export default function CreateLinkForm() {
             <h3 className="text-lg font-semibold">Lien Court</h3>
             <div className="flex gap-2">
               <div className="flex-1">
-                <Label>Domaine</Label>
+                <Label className="dark:text-white">Domaine</Label>
                 <Input
                   placeholder="tnbresa"
                   disabled
-                  className="bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none"
+                  className="bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none dark:text-white dark:bg-black"
                 />
               </div>
               <div className="flex items-center pt-8">/</div>
               <div className="flex-1">
-                <Label>Chemin personnalisé unique (facultatif)</Label>
+                <Label className="dark:text-white">
+                  Chemin personnalisé unique (facultatif)
+                </Label>
                 <Input
                   name="chemin_personnalise"
                   value={formData.chemin_personnalise}
                   onChange={handleChange}
                   placeholder="Chemin personnalisé"
+                  className="dark:text-white dark:bg-black"
                 />
               </div>
             </div>
@@ -223,7 +228,7 @@ export default function CreateLinkForm() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Fonctionnalités avancées</h3>
             <div className="flex items-center space-x-2">
-              <Label>Paramètres UTM</Label>
+              <Label className="dark:text-white">Paramètres UTM</Label>
               <Switch
                 checked={formData.showUtm}
                 onCheckedChange={() =>
@@ -235,52 +240,59 @@ export default function CreateLinkForm() {
               <div className="space-y-4 pt-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Terme (facultatif)</Label>
+                    <Label className="dark:text-white">
+                      Terme (facultatif)
+                    </Label>
                     <Input
                       name="utm_term"
                       value={formData.utm_term}
                       onChange={handleChange}
                       placeholder="Terme (facultatif)"
+                      className="dark:text-white dark:bg-black"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Contenu</Label>
+                    <Label className="dark:text-white">Contenu</Label>
                     <Input
                       name="utm_content"
                       value={formData.utm_content}
                       onChange={handleChange}
                       placeholder="Contenu"
+                      className="dark:text-white dark:bg-black"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Campagne</Label>
+                  <Label className="dark:text-white">Campagne</Label>
                   <Input
                     name="utm_campaign"
                     value={formData.utm_campaign}
                     onChange={handleChange}
                     placeholder="Campagne"
+                    className="dark:text-white dark:bg-black"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Source</Label>
+                    <Label className="dark:text-white">Source</Label>
                     <Input
                       name="utm_source"
                       value={formData.utm_source}
                       onChange={handleChange}
                       placeholder="Source"
+                      className="dark:text-white dark:bg-black"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Moyen</Label>
+                    <Label className="dark:text-white">Moyen</Label>
                     <Input
                       name="utm_medium"
                       value={formData.utm_medium}
                       onChange={handleChange}
                       placeholder="Moyen"
+                      className="dark:text-white dark:bg-black"
                     />
                   </div>
                 </div>
@@ -291,7 +303,7 @@ export default function CreateLinkForm() {
 
         <Button
           onClick={handleSubmit}
-          className="w-full bg-[#4169E1] hover:bg-[#4169E1]/90 text-white"
+          className="w-full bg-[#4169E1] hover:bg-[#4169E1]/90 text-white dark:bg-[#5a80e1] dark:hover:bg-[#5a80e1]/90"
         >
           Créer votre lien
         </Button>

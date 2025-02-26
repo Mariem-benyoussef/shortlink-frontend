@@ -55,7 +55,7 @@ export default function LoginForm({ className, ...props }) {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/");
+      router.push("/shortlinks");
     } catch (error) {
       console.error(error);
     } finally {

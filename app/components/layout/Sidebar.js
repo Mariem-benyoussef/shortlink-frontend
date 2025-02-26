@@ -9,13 +9,20 @@ export default function Sidebar() {
   const pathname = usePathname();
   const SidebarContent = () => (
     <>
-      <div className="h-full bg-[#F7F9F9] p-4">
-        <div className="px-4 text-xl font-bold text-[#FF1493]">TuniLink</div>
+      <div className="h-full bg-background dark:bg-[#2B2B2B] p-4">
+        <Link
+          className="px-4 text-xl font-bold text-[#FF1493] dark:text-[#FF69B4]"
+          href="/shortlinks"
+        >
+          TuniLink
+        </Link>
         <nav className="flex-1 px-2 mt-6 space-y-1">
           <Link
             href="/shortlinks"
             className={`flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground group ${
-              pathname === "/shortlinks" ? "bg-[#EFF6FF] text-blue-600" : ""
+              pathname === "/shortlinks"
+                ? "bg-[#EFF6FF] dark:bg-[#404040] text-blue-600 dark:text-[#5a80e1]"
+                : ""
             }`}
           >
             <Home className="w-5 h-5 mr-3" />
@@ -25,17 +32,20 @@ export default function Sidebar() {
             href="/shortlinks/create"
             className={`flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground group ${
               pathname === "/shortlinks/create"
-                ? "bg-[#EFF6FF] text-blue-600"
+                ? "bg-[#EFF6FF] dark:bg-[#404040] text-blue-600 dark:text-[#5a80e1]"
                 : ""
             }`}
           >
             <PlusCircle className="w-5 h-5 mr-3" />
             Je crée
           </Link>
+
           <Link
             href="/shortlinks"
             className={`flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground group ${
-              pathname === "/shortlinks" ? "bg-[#EFF6FF] text-blue-600" : ""
+              pathname === "/shortlinks"
+                ? "bg-[#EFF6FF] dark:bg-[#404040] text-blue-600 dark:text-[#5a80e1]"
+                : ""
             }`}
           >
             <Link2 className="w-5 h-5 mr-3" />
@@ -44,7 +54,9 @@ export default function Sidebar() {
           <Link
             href="/analytics"
             className={`flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground group ${
-              pathname === "/analytics" ? "bg-[#EFF6FF] text-blue-600" : ""
+              pathname === "/analytics"
+                ? "bg-[#EFF6FF] dark:bg-[#404040] text-blue-600 dark:text-[#5a80e1]"
+                : ""
             }`}
           >
             <LineChart className="w-5 h-5 mr-3" />
@@ -53,7 +65,9 @@ export default function Sidebar() {
           <Link
             href="#"
             className={`flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground group ${
-              pathname === "/history" ? "bg-[#EFF6FF] text-blue-600" : ""
+              pathname === "/history"
+                ? "bg-[#EFF6FF] dark:bg-[#404040] text-blue-600 dark:text-[#5a80e1]"
+                : ""
             }`}
           >
             <History className="w-5 h-5 mr-3" />

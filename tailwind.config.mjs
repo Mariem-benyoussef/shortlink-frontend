@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,7 +10,9 @@ export default {
     extend: {
       colors: {
         background: "var(--background)",
+        darkBackground: "#252525",
         foreground: "var(--foreground)",
+        darkForeground: "var(--dark-foreground)",
       },
     },
   },

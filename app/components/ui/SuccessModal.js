@@ -107,7 +107,7 @@ export default function SuccessModal({
                   Afficher les détails du lien
                 </Button>
                 <Button
-                  className="flex-1 bg-[#4169E1] hover:bg-[#4169E1]/90"
+                  className="flex-1 bg-[#4169E1] hover:bg-[#4169E1]/90 dark:bg-[#5a80e1] dark:hover:bg-[#5a80e1]/90"
                   onClick={copyToClipboard}
                 >
                   <Copy className="w-4 h-4 mr-2" />
@@ -167,7 +167,7 @@ export default function SuccessModal({
               </div>
               <button
                 onClick={() => setShowMore(!showMore)}
-                className="mt-4 text-sm text-blue-500"
+                className="mt-4 text-sm text-blue-500 dark:text-cyan-400"
               >
                 {showMore ? "Moins" : "Plus d'options"}
               </button>
