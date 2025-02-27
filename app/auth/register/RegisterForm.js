@@ -10,6 +10,7 @@ import { Label } from "@/app/components/ui/Label";
 import { Input } from "@/app/components/ui/Input";
 import { Button } from "@/app/components/ui/Button";
 import { Icons } from "@/app/components/ui/Icons";
+import { register } from "@/app/api/auth/route";
 
 export default function RegisterForm({ className, ...props }) {
   const router = useRouter();
@@ -79,10 +80,14 @@ export default function RegisterForm({ className, ...props }) {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      await register(formData.name, formData.email, formData.password, formData.confirmPassword);
       router.push("/auth/login");
     } catch (error) {
       console.error(error);
+      alert(
+        error.message || "Une erreur s'est produite lors de l'inscription."
+      );
     } finally {
       setIsLoading(false);
     }

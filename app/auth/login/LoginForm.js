@@ -9,6 +9,7 @@ import { Input } from "@/app/components/ui/Input";
 import { Button } from "@/app/components/ui/Button";
 import { Label } from "@/app/components/ui/Label";
 import { Icons } from "@/app/components/ui/Icons";
+import { login } from "@/app/api/auth/route";
 
 export default function LoginForm({ className, ...props }) {
   const router = useRouter();
@@ -54,10 +55,17 @@ export default function LoginForm({ className, ...props }) {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await login(formData.email, formData.password);
+
+      const { token, user } = data;
+      localStorage.setItem("token", token); // Stockez le token dans localStorage
+      localStorage.setItem("user", JSON.stringify(user)); // Stockez les informations de l'utilisateur
+
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
       router.push("/shortlinks");
     } catch (error) {
       console.error(error);
+      alert(error.message || "Une erreur s'est produite lors de la connexion.");
     } finally {
       setIsLoading(false);
     }

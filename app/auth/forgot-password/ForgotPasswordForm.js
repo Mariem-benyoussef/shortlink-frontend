@@ -10,6 +10,7 @@ import { Input } from "@/app/components/ui/Input";
 import { Button } from "@/app/components/ui/Button";
 import { Icons } from "@/app/components/ui/Icons";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/Alert";
+import { forgotPassword } from "@/app/api/auth/route";
 
 export default function ForgotPasswordForm({ className, ...props }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,8 +39,8 @@ export default function ForgotPasswordForm({ className, ...props }) {
     setError("");
 
     try {
-      // Here you would typically make an API call to send the reset email
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      await forgotPassword(email);
+      // await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       setIsSuccess(true);
     } catch (error) {
       setError("Une erreur s'est produite. Veuillez réessayer.");
