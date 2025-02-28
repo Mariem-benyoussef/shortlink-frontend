@@ -1,7 +1,7 @@
-import ResetPasswordForm from "@/components/reset-password-form";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import ResetPasswordForm from "./ResetPasswordForm";
 
 export default function ResetPasswordPage() {
   return (
@@ -11,7 +11,7 @@ export default function ResetPasswordPage() {
           <div className="max-w-sm w-full mx-auto">
             <div className="mb-8">
               <Link
-                href="/login"
+                href="/auth/login"
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -30,8 +30,8 @@ export default function ResetPasswordPage() {
         <div className="hidden lg:flex lg:flex-1 bg-blue-50 items-center justify-center p-12">
           <div className="relative w-full max-w-md aspect-[4/3]">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-VfuZ8yJeL2MFp95EVIqheUiwSAWBMR.png"
-              alt="Illustration"
+              src="/images/shortlink.png"
+              alt="Shortlink"
               fill
               className="object-contain"
               priority

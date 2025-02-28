@@ -13,7 +13,7 @@ import SuccessModal from "@/app/components/ui/SuccessModal";
 import { Switch } from "@/app/components/ui/Switch";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import { nanoid } from "nanoid";
 export default function CreateLinkForm() {
   const [formData, setFormData] = useState({
     destination: "",
@@ -31,12 +31,30 @@ export default function CreateLinkForm() {
   const [error, setError] = useState(null);
   const [shortlink, setShortlink] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    const randomPath = nanoid(8); // Génère une chaîne aléatoire de 8 caractères
+    setFormData((prev) => ({
+      ...prev,
+      chemin_personnalise: randomPath, // Définir le chemin aléatoire
+    }));
+  }, []); // Exécuté une seule fois au montage du composant
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Si l'utilisateur supprime le chemin, un nouveau chemin aléatoire est généré.
+    // if (name === "chemin_personnalise" && !value) {
+    //   const randomPath = nanoid(8);
+    //   setFormData((prev) => ({
+    //     ...prev,
+    //     chemin_personnalise: randomPath,
+    //   }));
+    // }
   };
 
   // Fonction pour vérifier l'unicité du chemin personnalisé
@@ -57,7 +75,7 @@ export default function CreateLinkForm() {
       const data = await response.json();
       // console.log("response data", data);
 
-      return data.isUnique; // Assuming the Laravel API responds with { isUnique: true/false }
+      return data.isUnique;
     } catch (error) {
       console.error("Erreur lors de la vérification du chemin :", error);
       setError("Erreur de connexion au serveur. Veuillez réessayer.");
@@ -79,8 +97,6 @@ export default function CreateLinkForm() {
       }
 
       const data = await response.json();
-      // console.log("response data", data);
-      // console.log("response data is UnIQUE", data.isUnique);
 
       return data.isUnique;
     } catch (error) {
@@ -146,8 +162,6 @@ export default function CreateLinkForm() {
 
       const data = await response.json();
       setShortlink(data.data); // Stocker le lien raccourci créé
-      // console.log("dataaa", data.data);
-      // console.log("Shortlink dataaaaaa id:", data.data.id);
       setShowSuccessModal(true); // Afficher le modal après la création du lie
     } catch (error) {
       console.error("Erreur lors de la création du lien :", error);

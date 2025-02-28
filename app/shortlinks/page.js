@@ -363,7 +363,7 @@ export default function LinksPage() {
 
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium truncate">
-                              {link.titre}
+                              {link.destination}
                             </h3>
                             <h3 className="font-medium truncate">
                               {`${link.domaine}.com/${link.chemin_personnalise}`}

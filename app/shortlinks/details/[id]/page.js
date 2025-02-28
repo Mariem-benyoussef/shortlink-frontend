@@ -27,6 +27,8 @@ import CountryBarChart from "@/app/components/charts/CountryBarChart";
 import DevicePieChart from "@/app/components/charts/DevicePieChart";
 import AnalyticsDataFetcher from "@/app/components/AnalyticsDataFetcher";
 import SourceBarChart from "@/app/components/charts/SourceBarChart";
+import IpBarChart from "@/app/components/charts/IpBarChart";
+import UserAgentBarChart from "@/app/components/charts/UserAgentBarChart";
 
 export default function LinkDetailsPage() {
   const [links, setLinks] = useState([]);
@@ -38,6 +40,8 @@ export default function LinkDetailsPage() {
     countries: [],
     devices: [],
     sources: [],
+    ips: [],
+    userAgents: [],
   });
   const { id } = useParams();
   const [linkData, setLinkData] = useState({
@@ -70,7 +74,16 @@ export default function LinkDetailsPage() {
         }
 
         const data = await response.json();
-        setLinkData(data);
+        setLinkData(data.shortlink);
+        if (data.clicks) {
+          // setAnalyticsData({
+          //   countries: data.clicks.map((click) => click.country), // Exemple
+          //   devices: data.clicks.map((click) => click.device), // Exemple
+          //   sources: data.clicks.map((click) => click.referrer), // Exemple
+          // });
+          const processedData = processClicksData(data.clicks);
+          setAnalyticsData(processedData);
+        }
       } catch (error) {
         console.error("Erreur lors du chargement du lien :", error);
       } finally {
@@ -81,49 +94,50 @@ export default function LinkDetailsPage() {
     fetchLinkData();
   }, [id]);
 
-  // useEffect(() => {
-  //   const fetchAnalyticsData = async (destination) => {
-  //     // Properly encode the destination URL
-  //     const encodedUrl = encodeURIComponent(destination);
-  //     console.log("Fetching analytics for:", encodedUrl);
+  const processClicksData = (clicks) => {
+    let countries = {};
+    let devices = {};
+    let sources = {};
+    let ips = {};
+    let userAgents = {};
+    clicks.forEach((click) => {
+      if (click.country) {
+        countries[click.country] = (countries[click.country] || 0) + 1;
+      }
+      if (click.device) {
+        devices[click.device] = (devices[click.device] || 0) + 1;
+      }
+      if (click.referrer) {
+        sources[click.referrer] = (sources[click.referrer] || 0) + 1;
+      }
+      if (click.ip) {
+        ips[click.ip] = (ips[click.ip] || 0) + 1;
+      }
+      if (click.user_agent) {
+        userAgents[click.user_agent] = (userAgents[click.user_agent] || 0) + 1;
+      }
+    });
 
-  //     try {
-  //       const response = await fetch(`/api/shortlinks/${encodedUrl}`, {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Application: "application/json",
-  //         },
-  //       });
-
-  //       console.log("Response:", response);
-  //       console.log("Response.json:", response.json());
-
-  //       if (!response.ok) {
-  //         throw new Error("Failed to fetch analytics");
-  //       }
-
-  //       const data = await response.json();
-  //       setAnalyticsData({
-  //         countries: data.countries || [],
-  //         devices: data.devices || [],
-  //         sources: data.sources || [],
-  //       });
-  //     } catch (error) {
-  //       console.error("Error fetching analytics:", error);
-  //       setError("Failed to fetch analytics");
-  //     }
-  //   };
-
-  //   // Fetch analytics data when linkData.destination changes
-  //   if (linkData && linkData.destination) {
-  //     console.log("Fetching analytics forrrrrrrrrrrrr:", linkData.destination);
-  //     fetchAnalyticsData(linkData.destination);
-  //   } else {
-  //     console.error("No destination URL available");
-  //   }
-  // }, [linkData, linkData.destination]); // Dependency is linkData.destination
-
+    return {
+      countries: Object.entries(countries).map(([country, count]) => ({
+        country,
+        count,
+      })),
+      devices: Object.entries(devices).map(([device, count]) => ({
+        device,
+        count,
+      })),
+      sources: Object.entries(sources).map(([source, count]) => ({
+        source,
+        count,
+      })),
+      ips: Object.entries(ips).map(([ip, count]) => ({ ip, count })),
+      userAgents: Object.entries(userAgents).map(([user_agent, count]) => ({
+        user_agent,
+        count,
+      })),
+    };
+  };
   const getFavicon = (url) => {
     try {
       const domain = new URL(url).hostname;
@@ -199,7 +213,9 @@ export default function LinkDetailsPage() {
                       unoptimized
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium truncate">{linkData.titre}</h3>
+                      <h3 className="font-medium truncate">
+                        {linkData.destination}
+                      </h3>
                       {/* <p className="text-sm text-muted-foreground truncate">
                         {linkData.destination} */}
                       <h3 className="font-medium truncate">
@@ -269,27 +285,97 @@ export default function LinkDetailsPage() {
                   </div>
                 </CardContent>
               </Card>
-              <AnalyticsDataFetcher
+              {/* <AnalyticsDataFetcher
                 destination={linkData.destination}
+                // setAnalyticsData={setAnalyticsData}
                 setAnalyticsData={setAnalyticsData}
                 setError={setError}
-              />
+              /> */}
+              {/* <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">Total des clics</h2>
+
+                <p className="text-2xl font-bold">{linkData.clicks.length}</p>
+              </div>
 
               <div className="mt-8">
                 <h2 className="text-lg font-semibold mb-4">Clics par pays</h2>
                 <CountryBarChart data={analyticsData.countries} />
               </div>
-
               <div className="mt-8">
                 <h2 className="text-lg font-semibold mb-4">
                   Clics par appareil
                 </h2>
                 <DevicePieChart data={analyticsData.devices} />
               </div>
-
               <div className="mt-8">
                 <h2 className="text-lg font-semibold mb-4">Clics par source</h2>
                 <SourceBarChart data={analyticsData.sources} />
+              </div>
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">
+                  Clics par adresse IP
+                </h2>
+                <IpBarChart data={analyticsData.ips} />
+              </div>
+
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">
+                  Clics par source de navigation
+                </h2>
+                <UserAgentBarChart data={analyticsData.userAgents} />
+              </div> */}
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold mb-4">
+                  Statistiques des clics
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">Total des clics</h3>
+                      <p className="text-2xl font-bold">
+                        {linkData.clicks.length}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">Clics par pays</h3>
+                      <CountryBarChart data={analyticsData.countries} />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">
+                        Clics par appareil
+                      </h3>
+                      <DevicePieChart data={analyticsData.devices} />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">
+                        Clics par source
+                      </h3>
+                      <SourceBarChart data={analyticsData.sources} />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">
+                        Clics par adresse IP
+                      </h3>
+                      <IpBarChart data={analyticsData.ips} />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">
+                        Clics par source de navigation
+                      </h3>
+                      <UserAgentBarChart data={analyticsData.userAgents} />
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           </main>
