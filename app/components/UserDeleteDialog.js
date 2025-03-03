@@ -13,14 +13,19 @@ import {
   DialogTrigger,
 } from "./ui/Dialog";
 import { Button } from "./ui/Button";
+import { deleteUser } from "../api/auth/route";
 
 export function UserDeleteDialog({ user }) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const handleDelete = () => {
-    // Ici, vous feriez normalement un appel API pour supprimer l'utilisateur
-    console.log("Utilisateur supprimé:", user);
-    setIsOpen(false);
+  const [deletedUser, setDeletedUser] = useState(user);
+  const handleDelete = async () => {
+    try {
+      await deleteUser(deletedUser.id, deletedUser);
+      console.log("Utilisateur supprimé:", user);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'utilisateur:", error);
+    }
   };
 
   return (

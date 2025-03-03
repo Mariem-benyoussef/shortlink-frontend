@@ -10,8 +10,9 @@ import {
 } from "../ui/Dropdown-menu";
 import { LogOut, Settings } from "lucide-react";
 import ThemeToggle from "./ToggleTheme";
-
+import { useRouter } from "next/navigation";
 export default function Header() {
+  const router = useRouter();
   return (
     <header className="border-b sticky top-0 bg-background z-40">
       <div className="flex h-16 items-center px-4 gap-4">
@@ -53,7 +54,7 @@ export default function Header() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => alert("Ouvrir les paramètres")}>
+            <DropdownMenuItem onClick={() => router.push("/auth/profile")}>
               <Settings className="w-5 h-5 mr-3" />
               Paramètres
             </DropdownMenuItem>

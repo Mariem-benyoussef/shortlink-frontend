@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,16 +20,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/Select";
+import { editUser, getUsers } from "../api/auth/route";
 
 export function UserEditDialog({ user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [editedUser, setEditedUser] = useState(user);
 
-  const handleSave = () => {
-    // Ici, vous feriez normalement un appel API pour mettre à jour l'utilisateur
-    console.log("Utilisateur mis à jour:", editedUser);
-    setIsOpen(false);
+  const handleSave = async () => {
+    try {
+      await editUser(editedUser.id, editedUser);
+      console.log("Utilisateur mis à jour:", editedUser);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
+    }
   };
+
+  // const handleCancel = () => {
+  //   setEditedUser(user);
+  //   setIsOpen(false);
+  // };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -85,27 +95,8 @@ export function UserEditDialog({ user }) {
                 <SelectValue placeholder="Sélectionnez un rôle" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Utilisateur">Utilisateur</SelectItem>
-                <SelectItem value="Administrateur">Administrateur</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">
-              Statut
-            </Label>
-            <Select
-              onValueChange={(value) =>
-                setEditedUser({ ...editedUser, status: value })
-              }
-              defaultValue={editedUser.status}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Sélectionnez un statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Actif">Actif</SelectItem>
-                <SelectItem value="Inactif">Inactif</SelectItem>
+                <SelectItem value="user">Utilisateur</SelectItem>
+                <SelectItem value="admin">Administrateur</SelectItem>
               </SelectContent>
             </Select>
           </div>

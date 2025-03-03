@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useReactTable,
   flexRender,
@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
-} from "@tanstack/react-table"; 
+} from "@tanstack/react-table";
 
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "./ui/Button";
@@ -32,24 +32,7 @@ import {
   TableRow,
 } from "./ui/Table";
 import { Checkbox } from "./ui/Checkbox";
-
-const data = [
-  {
-    id: "728ed52f",
-    name: "Ahmed Ben Ali",
-    email: "ahmed@example.com",
-    role: "Utilisateur",
-    status: "Actif",
-  },
-  {
-    id: "489e1d42",
-    name: "Fatma Saidi",
-    email: "fatma@example.com",
-    role: "Administrateur",
-    status: "Actif",
-  },
-  // Add more users here...
-];
+import { getUsers } from "../api/auth/route";
 
 const columns = [
   {
@@ -89,30 +72,26 @@ const columns = [
     ),
     cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
   },
+
   {
     accessorKey: "role",
     header: "Rôle",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("role")}</div>,
-  },
-  {
-    accessorKey: "status",
-    header: "Statut",
     cell: ({ row }) => (
-      <div
-        className={`capitalize ${
-          row.getValue("status") === "Actif" ? "text-green-600" : "text-red-600"
-        }`}
-      >
-        {row.getValue("status")}
+      <div className="capitalize">
+        {row.getValue("role") === "user"
+          ? "utilisateur"
+          : row.getValue("role") === "admin"
+          ? "Administrateur"
+          : row.getValue("role")}
       </div>
     ),
   },
+
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const user = row.original;
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -143,7 +122,20 @@ export function UserManagement() {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await getUsers();
+        setData(response.users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const table = useReactTable({
     data,
@@ -215,7 +207,7 @@ export function UserManagement() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel()?.rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

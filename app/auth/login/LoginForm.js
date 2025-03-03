@@ -10,9 +10,11 @@ import { Button } from "@/app/components/ui/Button";
 import { Label } from "@/app/components/ui/Label";
 import { Icons } from "@/app/components/ui/Icons";
 import { login } from "@/app/api/auth/route";
+import { useDispatch } from "react-redux";
 
 export default function LoginForm({ className, ...props }) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,7 +57,7 @@ export default function LoginForm({ className, ...props }) {
     setIsLoading(true);
 
     try {
-      const data = await login(formData.email, formData.password);
+      const data = await dispatch(login(formData.email, formData.password)).unwrap();
 
       const { token, user } = data;
       localStorage.setItem("token", token); // Stockez le token dans localStorage

@@ -1,44 +1,39 @@
-import { UserManagement } from "@/app/components/UserManagement";
-import Image from "next/image";
+"use client";
 
-// Metadata
-export const metadata = {
-  title: "Administration des utilisateurs",
-  description:
-    "Page d'administration pour la gestion des utilisateurs de TuniLink.",
-};
+import Header from "@/app/components/layout/Header";
+import Sidebar from "@/app/components/layout/Sidebar";
+import { BackButton } from "@/app/components/ui/Button";
+import { UserManagement } from "@/app/components/UserManagement";
 
 export default function AdminUsersPage() {
   return (
     <>
-      <div className="md:hidden">
-        <Image
-          src="/examples/tasks-light.png"
-          width={1280}
-          height={998}
-          alt="Tableau de bord des utilisateurs"
-          className="block dark:hidden"
-        />
-        <Image
-          src="/examples/tasks-dark.png"
-          width={1280}
-          height={998}
-          alt="Tableau de bord des utilisateurs"
-          className="hidden dark:block"
-        />
-      </div>
-      <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              Bienvenue, Admin
-            </h2>
-            <p className="text-muted-foreground">
-              Voici la liste de tous les utilisateurs de TuniLink.
-            </p>
-          </div>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col lg:pl-60">
+          <Header />
+          <main className="flex-1">
+            <div className="container mx-auto p-4 md:p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <BackButton />
+                  <div>
+                    <h2 className="text-2xl font-bold tracking-tight">
+                      Bienvenue, Admin
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Voici la liste de tous les utilisateurs de TuniLink.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full">
+                <UserManagement />
+              </div>
+            </div>
+          </main>
         </div>
-        <UserManagement />
       </div>
     </>
   );
