@@ -1,3 +1,4 @@
+"use client";
 import { Input } from "../ui/Input";
 import { Search } from "../ui/Search";
 import { Avatar, AvatarFallback } from "../ui/Avatar";
@@ -11,8 +12,25 @@ import {
 import { LogOut, Settings } from "lucide-react";
 import ThemeToggle from "./ToggleTheme";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/app/redux/slices/authSlice";
 export default function Header() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+
+  const getInitials = (name) => {
+    if (!name) return "";
+    const names = name.split(" ");
+    return names
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/auth/login");
+  };
   return (
     <header className="border-b sticky top-0 bg-background z-40">
       <div className="flex h-16 items-center px-4 gap-4">
@@ -50,18 +68,24 @@ export default function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer">
-              <AvatarFallback>MO</AvatarFallback>
+              <AvatarFallback>{user && getInitials(user.name)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem className="flex flex-col items-start">
+              <span className="font-semibold">{user?.name}</span>{" "}
+              <span className="text-sm text-muted-foreground">
+                {user?.email}
+              </span>{" "}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/auth/profile")}>
               <Settings className="w-5 h-5 mr-3" />
-              Paramètres
+              Gestion du profil
             </DropdownMenuItem>
             <DropdownMenuItem>
               <ThemeToggle />
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => alert("Déconnexion")}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="w-5 h-5 mr-3" />
               Déconnexion
             </DropdownMenuItem>

@@ -11,6 +11,7 @@ import { Label } from "@/app/components/ui/Label";
 import { Icons } from "@/app/components/ui/Icons";
 import { login } from "@/app/api/auth/route";
 import { useDispatch } from "react-redux";
+import { loginThunk } from "@/app/redux/slices/authSlice";
 
 export default function LoginForm({ className, ...props }) {
   const router = useRouter();
@@ -57,13 +58,15 @@ export default function LoginForm({ className, ...props }) {
     setIsLoading(true);
 
     try {
-      const data = await dispatch(login(formData.email, formData.password)).unwrap();
+      const data = await dispatch(
+        loginThunk({ email: formData.email, password: formData.password })
+      );
 
-      const { token, user } = data;
-      localStorage.setItem("token", token); // Stockez le token dans localStorage
-      localStorage.setItem("user", JSON.stringify(user)); // Stockez les informations de l'utilisateur
+      console.log("data", data);
+      // const { token, user } = data;
+      // localStorage.setItem("token", token);
+      // localStorage.setItem("user", JSON.stringify(user));
 
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
       router.push("/shortlinks");
     } catch (error) {
       console.error(error);

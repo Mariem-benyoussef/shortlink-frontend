@@ -7,18 +7,19 @@ const initialState = {
   isAuthenticated: false,
 };
 
-export const loginUser = createAsyncThunk(
-  "auth/login",
+export const loginThunk = createAsyncThunk(
+  "auth/loginThunk",
   async ({ email, password }, { dispatch, rejectWithValue }) => {
     try {
       const response = await login(email, password);
-      if (response.data) {
-        dispatch(loginSuccess(response.data));
-        return response.data;
+      // console.log("Response:", response);
+      if (response && response.token) {
+        dispatch(loginSuccess(response));
+        return response;
       }
       return rejectWithValue("Invalid response from server");
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Login failed");
+      return rejectWithValue(error.message || "Login failed");
     }
   }
 );
@@ -41,8 +42,14 @@ const authSlice = createSlice({
       localStorage.removeItem("user");
       localStorage.removeItem("token");
     },
+    updateUser(state, action) {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem("user", JSON.stringify(state.user));
+      }
+    },
   },
 });
 
-export const { loginSuccess, logout } = authSlice.actions;
+export const { loginSuccess, logout, updateUser } = authSlice.actions;
 export default authSlice.reducer;

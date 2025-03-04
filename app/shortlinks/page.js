@@ -70,7 +70,6 @@ export default function LinksPage() {
         const response = await fetch("/api/shortlinks");
         if (!response.ok) throw new Error("Network response was not ok");
         const data = await response.json();
-        // console.log("fetched Links", data);
         setLinks(data);
       } catch (error) {
         console.error("Error fetching links:", error);

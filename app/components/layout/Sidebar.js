@@ -1,11 +1,21 @@
+"use client";
 import Link from "next/link";
-import { Home, PlusCircle, Link2, LineChart, History } from "lucide-react";
+import {
+  Home,
+  PlusCircle,
+  Link2,
+  LineChart,
+  History,
+  Settings,
+} from "lucide-react";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/Sheet";
 import { Button } from "../ui/Button";
 import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
 
 export default function Sidebar() {
+  const { user } = useSelector((state) => state.auth);
   const pathname = usePathname();
   const SidebarContent = () => (
     <>
@@ -73,6 +83,19 @@ export default function Sidebar() {
             <History className="w-5 h-5 mr-3" />
             Histoire
           </Link>
+          {user?.role === "admin" && (
+            <Link
+              href="/admin/settings"
+              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground group ${
+                pathname === "/admin/settings"
+                  ? "bg-[#EFF6FF] dark:bg-[#404040] text-blue-600 dark:text-[#5a80e1]"
+                  : ""
+              }`}
+            >
+              <Settings className="w-5 h-5 mr-3" />
+              Paramètres
+            </Link>
+          )}
         </nav>
       </div>
     </>

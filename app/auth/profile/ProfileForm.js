@@ -41,6 +41,8 @@ import {
   getProfile,
   updateProfile,
 } from "@/app/api/auth/route";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUser } from "@/app/redux/slices/authSlice";
 
 const profileSchema = z.object({
   name: z.string().min(2, {
@@ -72,12 +74,13 @@ const passwordSchema = z
 export default function ProfileForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const form = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: "John Doe",
-      email: "john@example.com",
+      name: user?.name || "",
+      email: user?.email || "",
     },
   });
 
@@ -118,6 +121,9 @@ export default function ProfileForm() {
         title: "Profil mis à jour",
         description: "Vos informations ont été mises à jour avec succès.",
       });
+
+      dispatch(updateUser(updatedProfile.user));
+
       form.reset(updatedProfile.user);
     } catch (error) {
       toast({

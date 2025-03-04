@@ -21,7 +21,7 @@ export function UserDeleteDialog({ user }) {
   const handleDelete = async () => {
     try {
       await deleteUser(deletedUser.id, deletedUser);
-      console.log("Utilisateur supprimé:", user);
+      // console.log("Utilisateur supprimé:", user);
       setIsOpen(false);
     } catch (error) {
       console.error("Erreur lors de la suppression de l'utilisateur:", error);

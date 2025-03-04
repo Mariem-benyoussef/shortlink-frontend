@@ -19,3 +19,6 @@ export function CardTitle({ children, className }) {
 export function CardDescription({ children, className }) {
   return <p className={`text-gray-600 ${className}`}>{children}</p>;
 }
+export function CardFooter({ children, className }) {
+  return <div className={`border-t p-4 ${className}`}>{children}</div>;
+}

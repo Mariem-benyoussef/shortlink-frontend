@@ -29,7 +29,7 @@ export function UserEditDialog({ user }) {
   const handleSave = async () => {
     try {
       await editUser(editedUser.id, editedUser);
-      console.log("Utilisateur mis à jour:", editedUser);
+      // console.log("Utilisateur mis à jour:", editedUser);
       setIsOpen(false);
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
