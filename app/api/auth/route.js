@@ -177,7 +177,7 @@ export const deleteUser = async (id) => {
 export const getProfile = async () => {
   const token = localStorage.getItem("token");
 
-  const response = await fetch(`${BASE_URL}/auth/profile`, {
+  const response = await fetch(`${BASE_URL}/get-profile`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -201,7 +201,7 @@ export const getProfile = async () => {
 export const updateProfile = async (profileData) => {
   const token = localStorage.getItem("token");
 
-  const response = await fetch(`${BASE_URL}/auth/profile`, {
+  const response = await fetch(`${BASE_URL}/update-profile`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -232,7 +232,7 @@ export const changePassword = async (
 ) => {
   const token = localStorage.getItem("token");
 
-  const response = await fetch(`${BASE_URL}/auth/change-password`, {
+  const response = await fetch(`${BASE_URL}/change-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -246,6 +246,17 @@ export const changePassword = async (
     }),
   });
 
+
+  console.log("Données envoyées:", {
+    current_password: currentPassword,
+    new_password: newPassword,
+    new_password_confirmation: newPasswordConfirmation,
+  });
+
+  const result = await response.json();
+
+  console.log("Réponse API:", result);
+  
   if (!response.ok) {
     throw new Error("Erreur lors du changement de mot de passe");
   }

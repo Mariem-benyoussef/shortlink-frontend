@@ -22,7 +22,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-
             <ProfileForm />
           </div>
         </main>

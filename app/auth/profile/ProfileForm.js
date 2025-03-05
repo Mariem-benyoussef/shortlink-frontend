@@ -143,17 +143,22 @@ export default function ProfileForm() {
       await changePassword(
         values.currentPassword,
         values.newPassword,
-        values.confirmPassword
+        values.newPassword
       );
       toast({
         title: "Mot de passe changé",
         description: "Votre mot de passe a été mis à jour avec succès.",
       });
       passwordForm.reset();
+      localStorage.removeItem("token");
+      dispatch(logout());
+      router.push("/auth/login");
     } catch (error) {
+      console.error("Erreur lors du changement de mot de passe :", error);
       toast({
         title: "Erreur",
         description:
+          error.message ||
           "Une erreur s'est produite lors du changement de mot de passe.",
         variant: "destructive",
       });
