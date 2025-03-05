@@ -21,11 +21,6 @@ import {
 import { Input } from "@/app/components/ui/Input";
 import { Button } from "@/app/components/ui/Button";
 import {
-  createDomain,
-  getDomains,
-  setDefaultDomain,
-} from "@/app/api/domaines/route";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -34,15 +29,21 @@ import {
   DialogTitle,
 } from "@/app/components/ui/Dialog";
 import { Pencil, Trash2 } from "lucide-react";
-import { deleteDomain, updateDomain } from "@/app/api/domaines/[id]/route";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addDomain,
+  fetchDomains,
+  setDomainAsDefault,
+} from "@/app/redux/slices/domainSlice";
 
 export default function DomainSettings() {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const { domains, currentDomain, isLoading } = useSelector(
+    (state) => state.domains
+  );
   const [customDomain, setCustomDomain] = useState("");
   const [selectedDomain, setSelectedDomain] = useState("");
-  const [availableDomains, setAvailableDomains] = useState([]);
-  const [currentDomain, setCurrentDomain] = useState("");
 
   // Dialog states
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -53,8 +54,8 @@ export default function DomainSettings() {
 
   // Fetch domains on mount
   useEffect(() => {
-    fetchDomains();
-  }, []);
+    dispatch(fetchDomains());
+  }, [dispatch]);
 
   // Update input field when a domain is selected
   useEffect(() => {
@@ -62,41 +63,6 @@ export default function DomainSettings() {
       setCustomDomain(selectedDomain);
     }
   }, [selectedDomain]);
-
-  // Fetch domains function
-  async function fetchDomains() {
-    try {
-      const data = await getDomains();
-      console.log("data", data);
-      if (data && Array.isArray(data)) {
-        setAvailableDomains(data);
-
-        // Find the default domain
-        const defaultDomain = data.find((domain) => domain.isDefault);
-        if (defaultDomain) {
-          setCurrentDomain(defaultDomain.nom);
-        }
-
-        // change here
-        else if (data.length > 0) {
-          setCurrentDomain(data[0].nom);
-        }
-      } else {
-        toast({
-          title: "Erreur",
-          description: "Aucun domaine disponible n'a été trouvé.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description:
-          "Une erreur s'est produite lors de la récupération des domaines.",
-        variant: "destructive",
-      });
-    }
-  }
 
   // Save domain as default
   const handleSaveDomain = async () => {
@@ -109,63 +75,33 @@ export default function DomainSettings() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Check if domain exists
-      const existingDomain = availableDomains.find(
+      const existingDomain = domains.find(
         (domain) => domain.nom === customDomain
       );
-
       let domainId;
 
       if (existingDomain) {
-        // Use existing domain ID
         domainId = existingDomain.id;
       } else {
-        // Create new domain if not found
-        const newDomain = await createDomain({ nom: customDomain });
-        if (!newDomain) {
-          throw new Error("Échec de la création du domaine");
-        }
+        const newDomain = await dispatch(addDomain(customDomain)).unwrap();
         domainId = newDomain.id;
-
-        // Update available domains
-        await fetchDomains();
       }
 
-      // Set domain as default
-      const result = await setDefaultDomain(domainId);
+      await dispatch(setDomainAsDefault(domainId)).unwrap();
+      toast({
+        title: "Domaine par défaut défini",
+        description: `Le domaine ${customDomain} a été défini comme domaine par défaut pour toute l'application.`,
+      });
 
-      if (result) {
-        setCurrentDomain(customDomain);
-        toast({
-          title: "Domaine par défaut défini",
-          description: `Le domaine ${customDomain} a été défini comme domaine par défaut pour toute l'application.`,
-        });
-
-        // Refresh domains list
-        await fetchDomains();
-
-        // Reset fields
-        setCustomDomain("");
-        setSelectedDomain("");
-      } else {
-        toast({
-          title: "Erreur",
-          description:
-            "Une erreur est survenue lors de la définition du domaine par défaut.",
-          variant: "destructive",
-        });
-      }
+      setCustomDomain("");
+      setSelectedDomain("");
     } catch (error) {
-      console.error("Erreur:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'opération.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -187,32 +123,15 @@ export default function DomainSettings() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const result = await updateDomain(domainToEdit.id, {
-        nom: newDomainName,
+      await dispatch(
+        editDomain({ id: domainToEdit.id, nom: newDomainName })
+      ).unwrap();
+      toast({
+        title: "Domaine modifié",
+        description: `Le domaine a été modifié avec succès.`,
       });
-      if (result) {
-        toast({
-          title: "Domaine modifié",
-          description: `Le domaine a été modifié avec succès.`,
-        });
-        // If edited domain is the current domain, update it
-        if (currentDomain === domainToEdit.nom) {
-          setCurrentDomain(newDomainName);
-        }
-        // Refresh domains list
-        fetchDomains();
-        // Close dialog
-        setIsEditDialogOpen(false);
-      } else {
-        toast({
-          title: "Erreur",
-          description:
-            "Une erreur est survenue lors de la modification du domaine.",
-          variant: "destructive",
-        });
-      }
+      setIsEditDialogOpen(false);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -220,8 +139,6 @@ export default function DomainSettings() {
           "Une erreur est survenue lors de la modification du domaine.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -233,7 +150,7 @@ export default function DomainSettings() {
 
   // Delete domain
   const handleDeleteDomain = async () => {
-    if (availableDomains.length <= 1) {
+    if (domains.length <= 1) {
       toast({
         title: "Erreur",
         description: "Vous devez conserver au moins un domaine.",
@@ -243,40 +160,13 @@ export default function DomainSettings() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const result = await deleteDomain(domainToDelete.id);
-      if (result) {
-        toast({
-          title: "Domaine supprimé",
-          description: `Le domaine a été supprimé avec succès.`,
-        });
-        // If deleted domain is the current domain, set the first domain as current
-        if (currentDomain === domainToDelete.nom) {
-          const remainingDomains = availableDomains.filter(
-            (d) => d.id !== domainToDelete.id
-          );
-          if (remainingDomains.length > 0) {
-            setCurrentDomain(remainingDomains[0].nom);
-
-            // If deleted domain was default, set new default domain
-            if (domainToDelete.isDefault) {
-              await setDefaultDomain(remainingDomains[0].id);
-            }
-          }
-        }
-        // Refresh domains list
-        fetchDomains();
-        // Close dialog
-        setIsDeleteDialogOpen(false);
-      } else {
-        toast({
-          title: "Erreur",
-          description:
-            "Une erreur est survenue lors de la suppression du domaine.",
-          variant: "destructive",
-        });
-      }
+      await dispatch(removeDomain(domainToDelete.id)).unwrap();
+      toast({
+        title: "Domaine supprimé",
+        description: `Le domaine a été supprimé avec succès.`,
+      });
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -284,8 +174,6 @@ export default function DomainSettings() {
           "Une erreur est survenue lors de la suppression du domaine.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -328,12 +216,10 @@ export default function DomainSettings() {
                   <SelectValue placeholder="Sélectionnez un domaine existant" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableDomains.map((domain) => (
+                  {domains.map((domain) => (
                     <SelectItem key={domain.id} value={domain.nom}>
                       <div className="flex items-center justify-between w-full">
-                        <span>
-                          {domain.nom} {domain.isDefault && "(Par défaut)"}
-                        </span>
+                        <span>{domain.nom}</span>
                         <div className="flex gap-2 ml-4">
                           <Button
                             variant="ghost"

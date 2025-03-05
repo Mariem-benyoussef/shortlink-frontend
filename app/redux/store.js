@@ -7,6 +7,6 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     shortlink: shortlinkReducer,
-    domain: domainReducer,
+    domains: domainReducer,
   },
 });
